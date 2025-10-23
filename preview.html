@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compassionate Care Advisor - Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+    <header class="bg-white border-b">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded flex items-center justify-center text-white font-bold">CA</div>
+                <h1 class="text-xl font-semibold">Compassionate Care Advisor</h1>
+            </div>
+            <nav class="text-sm text-gray-600">
+                <a href="#about" class="hover:underline">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-12">
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h2 class="text-3xl font-extrabold mb-4">Compassionate Care Advisor</h2>
+                <p class="text-lg text-gray-700 mb-6">Using AI to ethically reduce hospice fraud and predict patient hospice eligibility earlier and more accurately.</p>
+                <div class="space-y-4">
+                    <p class="flex items-start gap-3"><span class="text-indigo-600 font-bold">•</span> Detect documentation errors and flag potential fraud</p>
+                    <p class="flex items-start gap-3"><span class="text-indigo-600 font-bold">•</span> Predict hospice-appropriate patients before eligibility criteria are met</p>
+                    <p class="flex items-start gap-3"><span class="text-indigo-600 font-bold">•</span> Improve outcomes for providers, patients, and regulators</p>
+                </div>
+                <div class="mt-8">
+                    <a href="#" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700">Try the Demo</a>
+                    <a href="#" class="ml-4 text-indigo-600">Book a Walkthrough</a>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-semibold mb-3">How it helps</h3>
+                <ul class="list-disc list-inside text-gray-700 space-y-2">
+                    <li>Automated checks for documentation inconsistencies</li>
+                    <li>Risk-scoring to highlight potential fraud</li>
+                    <li>Proactive eligibility signals to support clinical review</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="about" class="mt-16 bg-white p-8 rounded-lg shadow">
+            <h3 class="text-2xl font-bold mb-4">Mission</h3>
+            <p class="text-gray-700">Our mission is to use AI to create ethical and efficient hospice care — reducing fraud while ensuring patients who need hospice get the right support at the right time.</p>
+
+            <div class="mt-6 grid md:grid-cols-3 gap-6">
+                <div class="p-4 border rounded">
+                    <h4 class="font-semibold">Benefits</h4>
+                    <p class="text-sm text-gray-600 mt-2">Detect errors, flag inconsistencies, and streamline audits.</p>
+                </div>
+                <div class="p-4 border rounded">
+                    <h4 class="font-semibold">Impact</h4>
+                    <p class="text-sm text-gray-600 mt-2">Help providers, protect patients, and support CMS oversight.</p>
+                </div>
+                <div class="p-4 border rounded">
+                    <h4 class="font-semibold">Trust</h4>
+                    <p class="text-sm text-gray-600 mt-2">Designed with privacy, fairness, and clinical oversight in mind.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Chat Widget -->
+    <div id="chat-widget">
+        <button id="chat-bubble" class="fixed right-6 bottom-6 bg-indigo-600 text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center hover:bg-indigo-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 3.866-4.03 7-9 7-1.02 0-1.99-.105-2.9-.304L3 21l1.304-5.1A9.954 9.954 0 013 12c0-3.866 4.03-7 9-7s9 3.134 9 7z" />
+            </svg>
+        </button>
+
+        <div id="chat-window" class="fixed right-6 bottom-6 w-80 md:w-96 bg-white border rounded-lg shadow-lg flex-col overflow-hidden hidden">
+            <div class="flex items-center justify-between px-4 py-3 bg-indigo-600 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center font-semibold">HA</div>
+                    <div>
+                        <div class="font-semibold">Hospice AI Advisor</div>
+                        <div class="text-xs opacity-80">Ask me about fraud reduction & eligibility</div>
+                    </div>
+                </div>
+                <button id="close-chat" class="text-white/90 hover:text-white">Close</button>
+            </div>
+
+            <div class="p-4 h-64 overflow-y-auto">
+                <div class="mb-3 flex justify-start">
+                    <div class="bg-gray-100 text-gray-900 max-w-[80%] p-2 rounded">Hi! I'm the Compassionate Care Advisor. Ask me how I can help reduce fraud and improve hospice eligibility prediction.</div>
+                </div>
+            </div>
+
+            <div class="p-3 border-t">
+                <div class="flex gap-2">
+                    <input type="text" class="flex-1 px-3 py-2 border rounded" placeholder="Type your question..." />
+                    <button class="bg-indigo-600 text-white px-4 py-2 rounded">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatBubble = document.getElementById('chat-bubble');
+        const chatWindow = document.getElementById('chat-window');
+        const closeChat = document.getElementById('close-chat');
+
+        chatBubble.addEventListener('click', () => {
+            chatBubble.style.display = 'none';
+            chatWindow.classList.remove('hidden');
+            chatWindow.classList.add('flex');
+        });
+
+        closeChat.addEventListener('click', () => {
+            chatWindow.classList.add('hidden');
+            chatWindow.classList.remove('flex');
+            chatBubble.style.display = 'flex';
+        });
+    </script>
+</body>
+</html>
