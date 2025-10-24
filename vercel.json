@@ -1,20 +1,10 @@
 {
   "name": "hospice-advisor",
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/resources/(.*)",
-      "dest": "/resources/$1"
-    }
-  ],
   "functions": {
     "pages/api/chat.js": {
+      "maxDuration": 30
+    },
+    "pages/api/upload.js": {
       "maxDuration": 30
     }
   },
