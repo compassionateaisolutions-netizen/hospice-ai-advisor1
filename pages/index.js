@@ -15,14 +15,13 @@ export default function Home() {
             <div className="w-10 h-10 bg-indigo-600 rounded flex items-center justify-center text-white font-bold">CA</div>
             <h1 className="text-xl font-semibold">Compassionate Care Advisor</h1>
           </div>
-          <nav className="hidden md:flex items-center space-x-8 text-sm">
+          <nav className="hidden md:flex items-center space-x-6 text-sm">
             <a href="#home" className="text-gray-700 hover:text-indigo-600 transition-colors">Home</a>
             <a href="#how-it-works" className="text-gray-700 hover:text-indigo-600 transition-colors">How It Works</a>
             <a href="#benefits" className="text-gray-700 hover:text-indigo-600 transition-colors">Benefits</a>
-            <a href="#ai-in-action" className="text-gray-700 hover:text-indigo-600 transition-colors">AI in Action</a>
             <a href="#eligibility-criteria" className="text-gray-700 hover:text-indigo-600 transition-colors">Eligibility Criteria</a>
-            <a href="#about" className="text-gray-700 hover:text-indigo-600 transition-colors">About Us</a>
-            <a href="#partners" className="text-gray-700 hover:text-indigo-600 transition-colors">Partners & Compliance</a>
+            <a href="#clinical-tools" className="text-gray-700 hover:text-indigo-600 transition-colors">Clinical Tools</a>
+            <a href="#regulatory-framework" className="text-gray-700 hover:text-indigo-600 transition-colors">Regulatory Framework</a>
             <a href="#resources" className="text-gray-700 hover:text-indigo-600 transition-colors">Resources</a>
           </nav>
           <button className="md:hidden text-gray-600">
@@ -741,6 +740,363 @@ export default function Home() {
                 <div className="bg-white/10 rounded-lg p-4">
                   <h4 className="font-semibold mb-2">4. Regulatory Compliance</h4>
                   <p className="text-sm text-indigo-100">CMS requirement status</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Advanced Clinical Assessment Tools */}
+        <section id="clinical-tools" className="py-20 bg-green-50 -mx-6 px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Advanced Clinical Assessment Tools</h2>
+              <p className="text-lg text-gray-600">Specialized scoring systems and frameworks integrated into our AI analysis</p>
+            </div>
+
+            {/* Performance Assessment Tools */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Performance & Functional Assessment</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xl">📊</span>
+                    </div>
+                    <h4 className="text-lg font-semibold">Karnofsky Performance Scale</h4>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li><strong>100-80:</strong> Normal activity, minor symptoms</li>
+                    <li><strong>70-50:</strong> Cannot work, considerable assistance</li>
+                    <li><strong>40-20:</strong> Disabled, requires special care</li>
+                    <li><strong>≤50%:</strong> <span className="text-red-600 font-semibold">Hospice Eligible</span></li>
+                  </ul>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xl">⚕️</span>
+                    </div>
+                    <h4 className="text-lg font-semibold">ECOG Performance Status</h4>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li><strong>0:</strong> Fully active, no restrictions</li>
+                    <li><strong>1:</strong> Restricted in strenuous activity</li>
+                    <li><strong>2:</strong> Ambulatory, up &gt;50% of time</li>
+                    <li><strong>≥3:</strong> <span className="text-red-600 font-semibold">Hospice Eligible</span></li>
+                  </ul>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xl">🧠</span>
+                    </div>
+                    <h4 className="text-lg font-semibold">FAST Scale (Dementia)</h4>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li><strong>Stage 6:</strong> Basic ADL assistance needed</li>
+                    <li><strong>Stage 7A:</strong> Limited vocabulary (&lt;6 words)</li>
+                    <li><strong>Stage 7C:</strong> <span className="text-red-600 font-semibold">Hospice Eligible</span></li>
+                    <li>Cannot walk, sit up, smile, or hold head up</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Disease-Specific Assessment Tools */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Disease-Specific Assessment Frameworks</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Cardiac Assessment (NYHA Classification)</h4>
+                  <div className="space-y-3">
+                    <div className="border-l-4 border-green-500 pl-4">
+                      <p className="font-semibold text-sm">Class I-II</p>
+                      <p className="text-xs text-gray-600">Minimal limitations, comfortable at rest</p>
+                    </div>
+                    <div className="border-l-4 border-yellow-500 pl-4">
+                      <p className="font-semibold text-sm">Class III</p>
+                      <p className="text-xs text-gray-600">Marked limitation, less than ordinary activity</p>
+                    </div>
+                    <div className="border-l-4 border-red-500 pl-4">
+                      <p className="font-semibold text-sm">Class IV</p>
+                      <p className="text-xs text-gray-600"><span className="text-red-600 font-semibold">Hospice Eligible:</span> Symptoms at rest</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Pulmonary Assessment (GOLD Staging)</h4>
+                  <div className="space-y-3">
+                    <div className="border-l-4 border-green-500 pl-4">
+                      <p className="font-semibold text-sm">GOLD 1-2</p>
+                      <p className="text-xs text-gray-600">FEV1 &gt;50%, mild-moderate limitation</p>
+                    </div>
+                    <div className="border-l-4 border-yellow-500 pl-4">
+                      <p className="font-semibold text-sm">GOLD 3</p>
+                      <p className="text-xs text-gray-600">FEV1 30-50%, severe limitation</p>
+                    </div>
+                    <div className="border-l-4 border-red-500 pl-4">
+                      <p className="font-semibold text-sm">GOLD 4</p>
+                      <p className="text-xs text-gray-600"><span className="text-red-600 font-semibold">Hospice Eligible:</span> FEV1 &lt;30%</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Laboratory & Biomarker Indicators */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Laboratory & Biomarker Indicators</h3>
+              <div className="bg-white rounded-lg shadow-lg p-8">
+                <div className="grid md:grid-cols-3 gap-8">
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Nutritional Markers</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex justify-between">
+                        <span>Albumin:</span>
+                        <span className="text-red-600 font-semibold">&lt;2.5 g/dL</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Prealbumin:</span>
+                        <span className="text-red-600 font-semibold">&lt;10 mg/dL</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Weight Loss:</span>
+                        <span className="text-red-600 font-semibold">&gt;10% in 6 months</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>BMI:</span>
+                        <span className="text-red-600 font-semibold">&lt;18.5</span>
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Renal Function</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex justify-between">
+                        <span>Creatinine:</span>
+                        <span className="text-red-600 font-semibold">&gt;8.0 mg/dL</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>CrCl:</span>
+                        <span className="text-red-600 font-semibold">&lt;10 mL/min</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>BUN:</span>
+                        <span className="text-red-600 font-semibold">&gt;80 mg/dL</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Urine Output:</span>
+                        <span className="text-red-600 font-semibold">&lt;400 mL/day</span>
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Cardiac Markers</h4>
+                    <ul className="space-y-2 text-sm">
+                      <li className="flex justify-between">
+                        <span>Ejection Fraction:</span>
+                        <span className="text-red-600 font-semibold">≤20%</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>BNP:</span>
+                        <span className="text-red-600 font-semibold">&gt;400 pg/mL</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Troponin:</span>
+                        <span className="text-orange-600">Persistently elevated</span>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>Sodium:</span>
+                        <span className="text-red-600 font-semibold">&lt;130 mEq/L</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Prognostic Indicators */}
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-8 text-white">
+              <h3 className="text-2xl font-semibold mb-6">Advanced Prognostic Indicators</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white/10 rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Surprise Question</h4>
+                  <p className="text-sm text-purple-100">"Would I be surprised if this patient died within 6-12 months?"</p>
+                  <p className="text-xs text-purple-200 mt-2">Answer "No" = Consider hospice</p>
+                </div>
+                
+                <div className="bg-white/10 rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Decline Trajectory</h4>
+                  <p className="text-sm text-purple-100">Progressive functional decline over 3-6 months</p>
+                  <p className="text-xs text-purple-200 mt-2">Multiple hospitalizations</p>
+                </div>
+                
+                <div className="bg-white/10 rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Treatment Response</h4>
+                  <p className="text-sm text-purple-100">Diminishing response to optimal therapy</p>
+                  <p className="text-xs text-purple-200 mt-2">Side effects outweigh benefits</p>
+                </div>
+                
+                <div className="bg-white/10 rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Quality of Life</h4>
+                  <p className="text-sm text-purple-100">Significant symptom burden impacting daily life</p>
+                  <p className="text-xs text-purple-200 mt-2">Family/patient goals shift to comfort</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Regulatory Compliance Framework */}
+        <section id="regulatory-framework" className="py-20">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Regulatory Compliance Framework</h2>
+              <p className="text-lg text-gray-600">CMS guidelines and Medicare requirements integrated into our AI system</p>
+            </div>
+
+            {/* Medicare Coverage Criteria */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Medicare Coverage Criteria (42 CFR 418)</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Certification Requirements</h4>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                        <span className="text-xs font-semibold text-blue-600">1</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">Initial Certification</p>
+                        <p className="text-xs text-gray-600">Attending physician + hospice medical director within 15 days</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                        <span className="text-xs font-semibold text-blue-600">2</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">Recertification</p>
+                        <p className="text-xs text-gray-600">Face-to-face encounter within 30 days prior to 3rd benefit period</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                        <span className="text-xs font-semibold text-blue-600">3</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">Narrative Statement</p>
+                        <p className="text-xs text-gray-600">Clinical findings supporting 6-month prognosis</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Benefit Periods</h4>
+                  <div className="space-y-3">
+                    <div className="border-l-4 border-green-500 pl-4">
+                      <p className="font-semibold text-sm">Initial Period</p>
+                      <p className="text-xs text-gray-600">90 days - Physician certification required</p>
+                    </div>
+                    <div className="border-l-4 border-blue-500 pl-4">
+                      <p className="font-semibold text-sm">Subsequent Period</p>
+                      <p className="text-xs text-gray-600">90 days - Physician certification required</p>
+                    </div>
+                    <div className="border-l-4 border-purple-500 pl-4">
+                      <p className="font-semibold text-sm">Extended Periods</p>
+                      <p className="text-xs text-gray-600">60 days each - Face-to-face + certification required</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quality Reporting & Compliance */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Quality Reporting & Audit Compliance</h3>
+              <div className="bg-white rounded-lg shadow-lg p-8">
+                <div className="grid md:grid-cols-3 gap-8">
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">CAHPS Hospice Survey</h4>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      <li>• Communication with family</li>
+                      <li>• Emotional support provided</li>
+                      <li>• Help with pain and symptoms</li>
+                      <li>• Training family to care for patient</li>
+                      <li>• Rating of hospice care</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">HIS Quality Measures</h4>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      <li>• Patients treated with opioids who are given bowel regimen</li>
+                      <li>• Patients who believe they got right amount of medicine for pain</li>
+                      <li>• Patients whose shortness of breath was addressed</li>
+                      <li>• Patients treated with appropriate level of care</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Documentation Standards</h4>
+                    <ul className="space-y-2 text-sm text-gray-600">
+                      <li>• Plan of care updates every 15 days</li>
+                      <li>• Interdisciplinary team meetings</li>
+                      <li>• Medication management records</li>
+                      <li>• Family conference documentation</li>
+                      <li>• Volunteer contact logs</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Fraud Prevention Indicators */}
+            <div className="bg-red-50 rounded-lg p-8">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">AI-Powered Fraud Prevention Indicators</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white rounded-lg p-4 shadow">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">🚩</span>
+                    <h4 className="font-semibold text-sm">Length of Stay Anomalies</h4>
+                  </div>
+                  <p className="text-xs text-gray-600">Unusually long stays without clinical justification</p>
+                </div>
+                
+                <div className="bg-white rounded-lg p-4 shadow">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">⚠️</span>
+                    <h4 className="font-semibold text-sm">Live Discharge Patterns</h4>
+                  </div>
+                  <p className="text-xs text-gray-600">High rates of patients discharged alive after short stays</p>
+                </div>
+                
+                <div className="bg-white rounded-lg p-4 shadow">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">📊</span>
+                    <h4 className="font-semibold text-sm">Diagnosis Clustering</h4>
+                  </div>
+                  <p className="text-xs text-gray-600">Overconcentration in specific, profitable diagnoses</p>
+                </div>
+                
+                <div className="bg-white rounded-lg p-4 shadow">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">🔍</span>
+                    <h4 className="font-semibold text-sm">Documentation Gaps</h4>
+                  </div>
+                  <p className="text-xs text-gray-600">Missing face-to-face encounters or certifications</p>
                 </div>
               </div>
             </div>
