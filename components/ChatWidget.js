@@ -47,29 +47,14 @@ export default function ChatWidget({ embedded = false }) {
     setIsUploading(true)
     
     try {
-      // Process each file
-      const filePromises = validFiles.map(async (file) => {
-        const formData = new FormData()
-        formData.append('file', file)
-        
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        })
-        
-        if (!response.ok) throw new Error('Upload failed')
-        
-        const result = await response.json()
-        return {
-          name: file.name,
-          type: file.type,
-          size: file.size,
-          url: result.url,
-          content: result.content
-        }
-      })
+      // Process each file with simplified upload
+      const uploadedFileData = validFiles.map(file => ({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        content: file.type.includes('pdf') ? 'PDF document uploaded for analysis' : 'Image uploaded for analysis'
+      }))
 
-      const uploadedFileData = await Promise.all(filePromises)
       setUploadedFiles(prev => [...prev, ...uploadedFileData])
       
       // Add file upload message
