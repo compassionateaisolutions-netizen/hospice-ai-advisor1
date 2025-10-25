@@ -20,6 +20,7 @@ export default function Home() {
             <a href="#how-it-works" className="text-gray-700 hover:text-indigo-600 transition-colors">How It Works</a>
             <a href="#benefits" className="text-gray-700 hover:text-indigo-600 transition-colors">Benefits</a>
             <a href="#ai-in-action" className="text-gray-700 hover:text-indigo-600 transition-colors">AI in Action</a>
+            <a href="#eligibility-criteria" className="text-gray-700 hover:text-indigo-600 transition-colors">Eligibility Criteria</a>
             <a href="#about" className="text-gray-700 hover:text-indigo-600 transition-colors">About Us</a>
             <a href="#partners" className="text-gray-700 hover:text-indigo-600 transition-colors">Partners & Compliance</a>
             <a href="#resources" className="text-gray-700 hover:text-indigo-600 transition-colors">Resources</a>
@@ -422,6 +423,324 @@ export default function Home() {
                       <p className="text-gray-600">Patient data processed and purged according to retention policies</p>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Hospice Eligibility Criteria Section */}
+        <section id="eligibility-criteria" className="py-20 bg-blue-50 -mx-6 px-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Comprehensive Hospice Eligibility Criteria</h2>
+              <p className="text-lg text-gray-600">CMS-compliant assessment guidelines built into our AI system</p>
+            </div>
+
+            {/* Core Requirements */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Core Eligibility Requirements</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white p-6 rounded-lg shadow-lg">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-semibold mb-2">6-Month Prognosis</h4>
+                  <p className="text-sm text-gray-600">Terminal illness with 6-month life expectancy if disease runs normal course</p>
+                </div>
+                
+                <div className="bg-white p-6 rounded-lg shadow-lg">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-semibold mb-2">Physician Certification</h4>
+                  <p className="text-sm text-gray-600">Attending physician + hospice medical director certification required</p>
+                </div>
+                
+                <div className="bg-white p-6 rounded-lg shadow-lg">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <h4 className="font-semibold mb-2">Patient Election</h4>
+                  <p className="text-sm text-gray-600">Informed consent and election of hospice care by patient/family</p>
+                </div>
+                
+                <div className="bg-white p-6 rounded-lg shadow-lg">
+                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-semibold mb-2">Comfort Care Focus</h4>
+                  <p className="text-sm text-gray-600">Emphasis on comfort care versus curative treatment approaches</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Functional Decline Indicators */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Functional Decline Indicators</h3>
+              <div className="bg-white rounded-lg shadow-lg p-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="border-l-4 border-red-500 pl-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Performance Scales</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• Karnofsky ≤50%</li>
+                      <li>• ECOG ≥3</li>
+                      <li>• Dependence in 3+ ADLs</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="border-l-4 border-orange-500 pl-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Physical Decline</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• Recurrent falls</li>
+                      <li>• Decreased ambulation</li>
+                      <li>• Progressive weakness</li>
+                    </ul>
+                  </div>
+                  
+                  <div className="border-l-4 border-yellow-500 pl-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">Nutritional Status</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• Weight loss &gt;10% in 6 months</li>
+                      <li>• Albumin &lt;2.5 g/dL</li>
+                      <li>• Declining oral intake</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Disease-Specific Criteria */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Disease-Specific Eligibility Criteria</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                {/* Cancer */}
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xl">🎗️</span>
+                    </div>
+                    <h4 className="text-lg font-semibold">Cancer</h4>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li>• Metastatic or locally advanced disease</li>
+                    <li>• Karnofsky ≤50% or ECOG ≥3</li>
+                    <li>• Treatment failure or refusal</li>
+                    <li>• Declining performance status</li>
+                  </ul>
+                </div>
+
+                {/* Cardiac */}
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xl">❤️</span>
+                    </div>
+                    <h4 className="text-lg font-semibold">Cardiac</h4>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li>• NYHA Class IV heart failure</li>
+                    <li>• Ejection fraction ≤20%</li>
+                    <li>• 3+ hospitalizations in 12 months</li>
+                    <li>• Optimal therapy maximized</li>
+                  </ul>
+                </div>
+
+                {/* Pulmonary */}
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xl">🫁</span>
+                    </div>
+                    <h4 className="text-lg font-semibold">Pulmonary</h4>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li>• FEV1 &lt;30% predicted</li>
+                    <li>• O2 saturation ≤88% on O2</li>
+                    <li>• Cor pulmonale</li>
+                    <li>• Recurrent pneumonia</li>
+                  </ul>
+                </div>
+
+                {/* Neurological */}
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xl">🧠</span>
+                    </div>
+                    <h4 className="text-lg font-semibold">Neurological</h4>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li>• Advanced dementia (FAST 7C)</li>
+                    <li>• Unable to ambulate/dress/bathe</li>
+                    <li>• Minimal verbal communication</li>
+                    <li>• Recurrent infections</li>
+                  </ul>
+                </div>
+
+                {/* Renal */}
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xl">🫘</span>
+                    </div>
+                    <h4 className="text-lg font-semibold">Renal</h4>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li>• CrCl &lt;10 mL/min</li>
+                    <li>• Serum creatinine &gt;8.0 mg/dL</li>
+                    <li>• Dialysis refusal/discontinuation</li>
+                    <li>• Uremia, hyperkalemia</li>
+                  </ul>
+                </div>
+
+                {/* Liver */}
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xl">🫀</span>
+                    </div>
+                    <h4 className="text-lg font-semibold">Liver</h4>
+                  </div>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li>• Cirrhosis with complications</li>
+                    <li>• Refractory ascites</li>
+                    <li>• Spontaneous bacterial peritonitis</li>
+                    <li>• Hepatorenal syndrome</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Documentation Requirements */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Documentation Requirements</h3>
+              <div className="bg-white rounded-lg shadow-lg p-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Required Documentation</h4>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Initial physician certification within 15 days</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Face-to-face encounter within 30 days (recertification)</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Clinical notes supporting terminal prognosis</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Care plan focusing on comfort measures</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Patient election statement with informed consent</span>
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Red Flags (Inappropriate Admissions)</h4>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Stable chronic conditions without decline</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Active curative treatment ongoing</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Functional status too high (Karnofsky &gt;50%)</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Admission for social/convenience reasons</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center mt-0.5">
+                          <svg className="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <span className="text-sm text-gray-700">Lack of terminal diagnosis documentation</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Assessment Format */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-8 text-white">
+              <h3 className="text-2xl font-semibold mb-4">AI Assessment Response Format</h3>
+              <p className="text-indigo-100 mb-6">Our AI provides structured, clinical assessments using this format:</p>
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="bg-white/10 rounded-lg p-4">
+                  <h4 className="font-semibold mb-2">1. Eligibility Determination</h4>
+                  <p className="text-sm text-indigo-100">ELIGIBLE / NOT ELIGIBLE / NEEDS DOCUMENTATION</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4">
+                  <h4 className="font-semibold mb-2">2. Supporting Criteria</h4>
+                  <p className="text-sm text-indigo-100">Specific indicators met or missing</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4">
+                  <h4 className="font-semibold mb-2">3. Missing Elements</h4>
+                  <p className="text-sm text-indigo-100">Required documentation gaps</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-4">
+                  <h4 className="font-semibold mb-2">4. Regulatory Compliance</h4>
+                  <p className="text-sm text-indigo-100">CMS requirement status</p>
                 </div>
               </div>
             </div>
