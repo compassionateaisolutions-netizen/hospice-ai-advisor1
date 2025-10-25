@@ -47,25 +47,50 @@ export default function ChatWidget({ embedded = false }) {
     setIsUploading(true)
     
     try {
-      // Process each file with simplified upload
-      const uploadedFileData = validFiles.map(file => ({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        content: file.type.includes('pdf') ? 'PDF document uploaded for analysis' : 'Image uploaded for analysis'
-      }))
+      // Process each file and extract content for analysis
+      const filePromises = validFiles.map(async (file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            let content = ''
+            if (file.type.includes('pdf')) {
+              content = `PDF document "${file.name}" uploaded for hospice eligibility analysis. This document contains patient medical records that need to be reviewed for:\n1. Primary diagnosis and prognosis indicators\n2. Clinical documentation of declining functional status\n3. Evidence supporting 6-month life expectancy\n4. CMS compliance requirements\n5. Documentation quality assessment`
+            } else if (file.type.includes('image')) {
+              content = `Medical image "${file.name}" uploaded for analysis. This image may contain clinical charts, test results, or medical documentation relevant to hospice eligibility determination.`
+            }
+            
+            resolve({
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              content: content,
+              base64: e.target.result
+            })
+          }
+          reader.readAsDataURL(file)
+        })
+      })
 
+      const uploadedFileData = await Promise.all(filePromises)
       setUploadedFiles(prev => [...prev, ...uploadedFileData])
+      
+      // Automatically send file for analysis
+      const fileAnalysisMessage = `I have uploaded ${uploadedFileData.length} file(s) for hospice eligibility analysis: ${uploadedFileData.map(f => f.name).join(', ')}. Please analyze these documents for hospice eligibility criteria, clinical indicators, documentation quality, and CMS compliance requirements.`
       
       // Add file upload message
       const fileMessage = {
         id: Date.now(),
         from: 'user',
-        text: `📎 Uploaded ${uploadedFileData.length} file(s): ${uploadedFileData.map(f => f.name).join(', ')}`,
+        text: fileAnalysisMessage,
         files: uploadedFileData
       }
       
       setMessages(prev => [...prev, fileMessage])
+      
+      // Automatically trigger AI analysis
+      setTimeout(() => {
+        send(fileAnalysisMessage, uploadedFileData)
+      }, 500)
       
     } catch (error) {
       console.error('Upload error:', error)
@@ -82,17 +107,24 @@ export default function ChatWidget({ embedded = false }) {
     setUploadedFiles(prev => prev.filter((_, index) => index !== fileIndex))
   }
 
-  const send = async () => {
-    if (!input.trim() && uploadedFiles.length === 0) return
+  const send = async (messageText = null, fileData = null) => {
+    const actualMessage = messageText || input
+    const actualFiles = fileData || (uploadedFiles.length > 0 ? [...uploadedFiles] : undefined)
+    
+    if (!actualMessage.trim() && !actualFiles) return
     
     const userMsg = { 
       id: Date.now(), 
       from: 'user', 
-      text: input || 'Analyzing uploaded files...',
-      files: uploadedFiles.length > 0 ? [...uploadedFiles] : undefined
+      text: actualMessage || 'Analyzing uploaded files...',
+      files: actualFiles
     }
     
-    setMessages((m) => [...m, userMsg])
+    // Only add message if it's not already added (for manual sends)
+    if (!messageText) {
+      setMessages((m) => [...m, userMsg])
+    }
+    
     setInput('')
     setUploadedFiles([])
 
@@ -104,8 +136,8 @@ export default function ChatWidget({ embedded = false }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          message: userMsg.text,
-          files: userMsg.files 
+          message: actualMessage,
+          files: actualFiles 
         }),
       })
 
