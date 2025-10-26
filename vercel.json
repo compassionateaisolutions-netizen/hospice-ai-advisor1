@@ -4,6 +4,9 @@
     "pages/api/chat.js": {
       "maxDuration": 30
     },
+    "pages/api/chat-assistant.js": {
+      "maxDuration": 60
+    },
     "pages/api/upload.js": {
       "maxDuration": 30
     }
