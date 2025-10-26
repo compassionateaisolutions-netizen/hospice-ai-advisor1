@@ -47,42 +47,43 @@ export default function ChatWidget({ embedded = false }) {
     setIsUploading(true)
     
     try {
-      // Process each file and extract actual content
+      // Process each file - only base64 encode images for GPT-4V, not PDFs
       const filePromises = validFiles.map(async (file) => {
         return new Promise((resolve) => {
-          const reader = new FileReader()
-          reader.onload = async (e) => {
-            const result = e.target.result
-            
-            if (file.type.includes('image')) {
-              // For images, send base64 data for GPT-4V analysis
+          if (file.type.includes('image')) {
+            // For images, convert to base64 for GPT-4V analysis
+            const reader = new FileReader()
+            reader.onload = (e) => {
               resolve({
                 name: file.name,
                 type: file.type,
                 size: file.size,
-                content: result, // base64 data URL
+                content: e.target.result, // base64 data URL
                 isImage: true
               })
-            } else if (file.type.includes('pdf')) {
-              // For PDFs, we'll send the base64 and let the API handle extraction
-              resolve({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                content: result, // base64 data URL
-                isPDF: true
-              })
             }
+            reader.readAsDataURL(file)
+          } else if (file.type.includes('pdf')) {
+            // For PDFs, just send metadata - don't base64 encode (too large and not needed)
+            resolve({
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              isPDF: true
+            })
           }
-          reader.readAsDataURL(file)
         })
       })
 
       const uploadedFileData = await Promise.all(filePromises)
       setUploadedFiles(prev => [...prev, ...uploadedFileData])
       
-      // Create analysis message with actual file content
-      const fileAnalysisMessage = `I have uploaded ${uploadedFileData.length} file(s) for hospice eligibility analysis: ${uploadedFileData.map(f => f.name).join(', ')}. Please provide a comprehensive hospice eligibility assessment based on the actual content of these documents, including specific clinical indicators, documentation quality, and CMS compliance evaluation.`
+      // Create analysis message with file information
+      const imageFiles = uploadedFileData.filter(f => f.isImage)
+      const pdfFiles = uploadedFileData.filter(f => f.isPDF)
+      const fileList = [...imageFiles.map(f => f.name), ...pdfFiles.map(f => f.name)].join(', ')
+      
+      const fileAnalysisMessage = `I have uploaded ${uploadedFileData.length} file(s) for hospice eligibility analysis: ${fileList}. ${imageFiles.length > 0 ? `I can see images showing: [patient documents/clinical data]. ` : ''}${pdfFiles.length > 0 ? `PDF files uploaded: ${pdfFiles.map(f => f.name).join(', ')}. ` : ''}Please provide a comprehensive hospice eligibility assessment based on this patient information, including specific clinical indicators, documentation quality, and CMS compliance evaluation.`
       
       // Add user message
       const fileMessage = {
@@ -94,7 +95,7 @@ export default function ChatWidget({ embedded = false }) {
       
       setMessages(prev => [...prev, fileMessage])
       
-      // Send for analysis with actual file content
+      // Send for analysis with actual file content (only images have content)
       await send(fileAnalysisMessage, uploadedFileData)
       
     } catch (error) {
