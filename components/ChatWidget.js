@@ -18,6 +18,7 @@ export default function ChatWidget({ embedded = false }) {
   const [input, setInput] = useState('')
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [isUploading, setIsUploading] = useState(false)
+  const [threadId, setThreadId] = useState(null) // Store thread ID for conversation continuity
   const endRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -134,15 +135,16 @@ export default function ChatWidget({ embedded = false }) {
     }
 
     try {
-      // Call the API endpoint with both text and files
-      const response = await fetch('/api/chat', {
+      // Call the Assistants API endpoint
+      const response = await fetch('/api/chat-assistant', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
           message: actualMessage,
-          files: actualFiles 
+          files: actualFiles,
+          threadId: threadId // Pass current thread for conversation continuity
         }),
       })
 
@@ -151,6 +153,12 @@ export default function ChatWidget({ embedded = false }) {
       }
 
       const data = await response.json()
+      
+      // Update thread ID for subsequent messages
+      if (data.threadId) {
+        setThreadId(data.threadId)
+      }
+      
       setMessages((m) => [...m, { 
         id: Date.now() + 1, 
         from: 'bot', 
