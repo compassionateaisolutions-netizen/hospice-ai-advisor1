@@ -47,20 +47,42 @@ export default function ChatWidget({ embedded = false }) {
     setIsUploading(true)
     
     try {
-      // Process files and create analysis message
-      const uploadedFileData = validFiles.map(file => ({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        content: file.type.includes('pdf') ? 
-          `PDF document "${file.name}" uploaded for hospice eligibility analysis. This document contains patient medical records that need to be reviewed for: 1. Primary diagnosis and prognosis indicators 2. Clinical documentation of declining functional status 3. Evidence supporting 6-month life expectancy 4. CMS compliance requirements 5. Documentation quality assessment` :
-          `Medical image "${file.name}" uploaded for analysis. This image may contain clinical charts, test results, or medical documentation relevant to hospice eligibility determination.`
-      }))
+      // Process each file and extract actual content
+      const filePromises = validFiles.map(async (file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader()
+          reader.onload = async (e) => {
+            const result = e.target.result
+            
+            if (file.type.includes('image')) {
+              // For images, send base64 data for GPT-4V analysis
+              resolve({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                content: result, // base64 data URL
+                isImage: true
+              })
+            } else if (file.type.includes('pdf')) {
+              // For PDFs, we'll send the base64 and let the API handle extraction
+              resolve({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                content: result, // base64 data URL
+                isPDF: true
+              })
+            }
+          }
+          reader.readAsDataURL(file)
+        })
+      })
 
+      const uploadedFileData = await Promise.all(filePromises)
       setUploadedFiles(prev => [...prev, ...uploadedFileData])
       
-      // Create analysis message
-      const fileAnalysisMessage = `I have uploaded ${uploadedFileData.length} file(s) for hospice eligibility analysis: ${uploadedFileData.map(f => f.name).join(', ')}. Please analyze these documents for hospice eligibility criteria, clinical indicators, documentation quality, and CMS compliance requirements.`
+      // Create analysis message with actual file content
+      const fileAnalysisMessage = `I have uploaded ${uploadedFileData.length} file(s) for hospice eligibility analysis: ${uploadedFileData.map(f => f.name).join(', ')}. Please provide a comprehensive hospice eligibility assessment based on the actual content of these documents, including specific clinical indicators, documentation quality, and CMS compliance evaluation.`
       
       // Add user message
       const fileMessage = {
@@ -72,7 +94,7 @@ export default function ChatWidget({ embedded = false }) {
       
       setMessages(prev => [...prev, fileMessage])
       
-      // Send for analysis
+      // Send for analysis with actual file content
       await send(fileAnalysisMessage, uploadedFileData)
       
     } catch (error) {

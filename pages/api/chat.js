@@ -39,18 +39,12 @@ export default async function handler(req, res) {
     }
 
     // OpenAI API integration with custom GPT
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || 'gpt-4',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a hospice eligibility specialist with comprehensive knowledge of clinical assessment tools, regulatory frameworks, and advanced prognostic indicators. Provide direct clinical assessments and eligibility determinations based on CMS guidelines and evidence-based scoring systems.
+    
+    // Prepare messages array with potential image content
+    const messages = [
+      {
+        role: 'system',
+        content: `You are a hospice eligibility specialist with comprehensive knowledge of clinical assessment tools, regulatory frameworks, and advanced prognostic indicators. Provide direct clinical assessments and eligibility determinations based on CMS guidelines and evidence-based scoring systems.
 
 CORE ELIGIBILITY REQUIREMENTS:
 1. Terminal illness with 6-month prognosis if disease runs normal course
@@ -148,28 +142,86 @@ RESPONSE FORMAT:
 4. MISSING ELEMENTS: Required documentation/assessment gaps
 5. REGULATORY COMPLIANCE: CMS requirement status
 
-Analyze uploaded documents against these comprehensive criteria using specific scoring systems and laboratory values. Provide factual, evidence-based determinations with clinical scoring references.`
-          },
-          {
-            role: 'user',
-            content: files && files.length > 0 
-              ? `${message}\n\nI have uploaded ${files.length} file(s) for analysis:\n${files.map(f => `- ${f.name} (${f.type}): ${f.content}`).join('\n')}`
-              : message
-          }
-        ],
-        max_tokens: parseInt(process.env.OPENAI_MAX_TOKENS) || 500,
-        temperature: parseFloat(process.env.OPENAI_TEMPERATURE) || 0.7,
-      }),
-    });
+When analyzing uploaded documents or images, examine the actual content for clinical data, lab values, diagnoses, functional assessments, and documentation quality. Provide specific findings from the documents.
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+Analyze uploaded documents against these comprehensive criteria using specific scoring systems and laboratory values. Provide factual, evidence-based determinations with clinical scoring references.`
+      }
+    ]
+
+    // Handle files with proper image and document support
+    if (files && files.length > 0) {
+      const hasImages = files.some(f => f.isImage)
+      
+      if (hasImages) {
+        // Use GPT-4V for image analysis
+        const userMessage = {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `${message}\n\nI have uploaded ${files.length} file(s) for hospice eligibility analysis. Please analyze the actual content of these documents/images and provide a comprehensive hospice eligibility assessment with specific clinical findings.`
+            }
+          ]
+        }
+        
+        // Add images to the message
+        files.forEach(file => {
+          if (file.isImage) {
+            userMessage.content.push({
+              type: 'image_url',
+              image_url: {
+                url: file.content
+              }
+            })
+          } else {
+            // For PDFs, include as text description for now
+            userMessage.content.push({
+              type: 'text',
+              text: `PDF Document: ${file.name} - Please note: PDF text extraction is limited. If critical information is visible in the document, please indicate what additional details would be helpful for analysis.`
+            })
+          }
+        })
+        
+        messages.push(userMessage)
+      } else {
+        // No images, use standard text format
+        messages.push({
+          role: 'user',
+          content: `${message}\n\nI have uploaded ${files.length} file(s) for analysis:\n${files.map(f => `- ${f.name} (${f.type})`).join('\n')}\n\nPlease provide a comprehensive hospice eligibility assessment based on any clinical information that can be extracted from these documents.`
+        })
+      }
+    } else {
+      messages.push({
+        role: 'user',
+        content: message
+      })
     }
 
-    const data = await response.json();
-    const botMessage = data.choices[0].message.content;
+    // Use GPT-4V model if images are present, otherwise use standard model
+    const modelToUse = files && files.some(f => f.isImage) ? 'gpt-4-vision-preview' : (process.env.OPENAI_MODEL || 'gpt-4o')
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: modelToUse,
+        messages: messages,
+        max_tokens: parseInt(process.env.OPENAI_MAX_TOKENS) || 1000,
+        temperature: parseFloat(process.env.OPENAI_TEMPERATURE) || 0.7,
+      })
+    })
 
-    res.status(200).json({ message: botMessage });
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const botMessage = data.choices[0].message.content
+
+    res.status(200).json({ message: botMessage })
    
   } catch (error) {
     console.error('Error:', error);
