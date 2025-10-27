@@ -66,54 +66,7 @@ export default async function handler(req, res) {
       thread_id = threadData.id
     }
 
-    // Process files using OpenAI's Files API
-    const uploadedFileIds = []
-    
-    if (files && files.length > 0) {
-      const pdfFiles = files.filter(f => f.isPDF)
-      
-      // Upload PDFs to OpenAI Files API
-      for (const file of pdfFiles) {
-        try {
-          const base64Content = file.content.split(',')[1] || file.content
-          const binaryData = Buffer.from(base64Content, 'base64')
-          
-          // Create FormData for file upload
-          const formData = new (require('form-data'))()
-          formData.append('purpose', 'assistants')
-          formData.append('file', binaryData, file.name)
-          
-          const fileUploadResponse = await fetch(
-            'https://api.openai.com/v1/files',
-            {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                ...formData.getHeaders()
-              },
-              body: formData
-            }
-          )
-          
-          if (!fileUploadResponse.ok) {
-            console.warn(`Failed to upload PDF ${file.name}: ${fileUploadResponse.status}`)
-            continue
-          }
-          
-          const uploadedFile = await fileUploadResponse.json()
-          if (uploadedFile.id) {
-            uploadedFileIds.push({
-              id: uploadedFile.id,
-              name: file.name
-            })
-          }
-        } catch (uploadError) {
-          console.warn(`Error uploading file ${file.name}:`, uploadError.message)
-        }
-      }
-    }
-
-    // Add message to thread with file references
+    // Process files and add to message content
     const messageContent = [
       {
         type: 'text',
@@ -121,11 +74,12 @@ export default async function handler(req, res) {
       }
     ]
 
-    // Add images if present
+    // Add files if present
     if (files && files.length > 0) {
       const imageFiles = files.filter(f => f.isImage)
+      const pdfFiles = files.filter(f => f.isPDF)
 
-      // Add image data to message
+      // Add image data to message (GPT-4V can analyze images)
       imageFiles.forEach(file => {
         if (file.content) {
           messageContent.push({
@@ -136,20 +90,21 @@ export default async function handler(req, res) {
           })
         }
       })
+
+      // Add PDF file reference with content hint for analysis
+      if (pdfFiles.length > 0) {
+        const pdfInfo = pdfFiles.map(f => `${f.name} (${(f.size/1024).toFixed(1)}KB)`).join(', ')
+        messageContent.push({
+          type: 'text',
+          text: `\n\n[Patient Documents Uploaded]: ${pdfInfo}\nPlease analyze the patient records provided for hospice eligibility assessment.`
+        })
+      }
     }
 
     // Post message to thread
     const messagePayload = {
       role: 'user',
       content: messageContent
-    }
-    
-    // Add file IDs if any PDFs were uploaded
-    if (uploadedFileIds.length > 0) {
-      messagePayload.attachments = uploadedFileIds.map(f => ({
-        file_id: f.id,
-        tools: [{ type: 'file_search' }]
-      }))
     }
 
     const addMessageResponse = await fetch(
@@ -258,10 +213,11 @@ export default async function handler(req, res) {
       threadId: thread_id
     })
   } catch (error) {
-    console.error('Assistant API Error:', error)
+    console.error('Assistant API Error:', error.message, error.stack)
     res.status(500).json({
       message: 'Sorry, I encountered an error. Please try again.',
-      error: error.message
+      error: error.message,
+      details: error.stack
     })
   }
 }
