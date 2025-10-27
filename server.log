@@ -1,0 +1,13 @@
+
+> hospice-advisor@1.0.0 dev
+> next dev
+
+   ▲ Next.js 14.1.0
+   - Local:        http://localhost:3000
+   - Environments: .env.local
+
+ ✓ Ready in 1078ms
+ ○ Compiling / ...
+ ✓ Compiled / in 835ms (206 modules)
+ ✓ Compiled /api/chat in 62ms (67 modules)
+ ✓ Compiled in 162ms (206 modules)

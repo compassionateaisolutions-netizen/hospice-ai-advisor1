@@ -185,7 +185,8 @@ export default async function handler(req, res) {
         if (lastMessage.content && lastMessage.content.length > 0) {
           const textContent = lastMessage.content.find(c => c.type === 'text')
           if (textContent) {
-            assistantMessage = textContent.text
+            // Extract just the text value, not the whole object
+            assistantMessage = typeof textContent.text === 'string' ? textContent.text : textContent.text?.value || textContent.text
           }
         }
       } else if (statusData.status === 'failed' || statusData.status === 'cancelled') {

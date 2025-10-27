@@ -159,10 +159,15 @@ export default function ChatWidget({ embedded = false }) {
         setThreadId(data.threadId)
       }
       
+      // Handle both message formats (nested or direct)
+      const messageText = typeof data.message === 'string' 
+        ? data.message 
+        : data.message?.value || data.message
+      
       setMessages((m) => [...m, { 
         id: Date.now() + 1, 
         from: 'bot', 
-        text: data.message 
+        text: messageText 
       }])
     } catch (error) {
       console.error('Chat error:', error)
