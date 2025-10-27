@@ -20,6 +20,7 @@
   "author": "Compassionate Solutions",
   "license": "UNLICENSED",
   "dependencies": {
+    "form-data": "^4.0.4",
     "formidable": "^3.5.4",
     "next": "14.1.0",
     "node-fetch": "^2.7.0",

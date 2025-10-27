@@ -66,7 +66,54 @@ export default async function handler(req, res) {
       thread_id = threadData.id
     }
 
-    // Add message to thread
+    // Process files using OpenAI's Files API
+    const uploadedFileIds = []
+    
+    if (files && files.length > 0) {
+      const pdfFiles = files.filter(f => f.isPDF)
+      
+      // Upload PDFs to OpenAI Files API
+      for (const file of pdfFiles) {
+        try {
+          const base64Content = file.content.split(',')[1] || file.content
+          const binaryData = Buffer.from(base64Content, 'base64')
+          
+          // Create FormData for file upload
+          const formData = new (require('form-data'))()
+          formData.append('purpose', 'assistants')
+          formData.append('file', binaryData, file.name)
+          
+          const fileUploadResponse = await fetch(
+            'https://api.openai.com/v1/files',
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                ...formData.getHeaders()
+              },
+              body: formData
+            }
+          )
+          
+          if (!fileUploadResponse.ok) {
+            console.warn(`Failed to upload PDF ${file.name}: ${fileUploadResponse.status}`)
+            continue
+          }
+          
+          const uploadedFile = await fileUploadResponse.json()
+          if (uploadedFile.id) {
+            uploadedFileIds.push({
+              id: uploadedFile.id,
+              name: file.name
+            })
+          }
+        } catch (uploadError) {
+          console.warn(`Error uploading file ${file.name}:`, uploadError.message)
+        }
+      }
+    }
+
+    // Add message to thread with file references
     const messageContent = [
       {
         type: 'text',
@@ -74,10 +121,9 @@ export default async function handler(req, res) {
       }
     ]
 
-    // Add files if present (images and PDFs)
+    // Add images if present
     if (files && files.length > 0) {
       const imageFiles = files.filter(f => f.isImage)
-      const pdfFiles = files.filter(f => f.isPDF)
 
       // Add image data to message
       imageFiles.forEach(file => {
@@ -90,30 +136,28 @@ export default async function handler(req, res) {
           })
         }
       })
-
-      // Add PDF data as text attachments
-      pdfFiles.forEach(file => {
-        if (file.content) {
-          // Extract base64 content from data URL (format: "data:application/pdf;base64,...")
-          const base64Content = file.content.split(',')[1] || file.content
-          messageContent.push({
-            type: 'text',
-            text: `[PDF File: ${file.name}]\n[Base64 encoded PDF content for analysis]\n${base64Content.substring(0, 500)}...`
-          })
-        }
-      })
     }
 
     // Post message to thread
+    const messagePayload = {
+      role: 'user',
+      content: messageContent
+    }
+    
+    // Add file IDs if any PDFs were uploaded
+    if (uploadedFileIds.length > 0) {
+      messagePayload.attachments = uploadedFileIds.map(f => ({
+        file_id: f.id,
+        tools: [{ type: 'file_search' }]
+      }))
+    }
+
     const addMessageResponse = await fetch(
       `https://api.openai.com/v1/threads/${thread_id}/messages`,
       {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          role: 'user',
-          content: messageContent
-        })
+        body: JSON.stringify(messagePayload)
       }
     )
 
