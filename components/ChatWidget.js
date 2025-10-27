@@ -48,31 +48,21 @@ export default function ChatWidget({ embedded = false }) {
     setIsUploading(true)
     
     try {
-      // Process each file - only base64 encode images for GPT-4V, not PDFs
+      // Process each file - convert all to base64 for GPT analysis
       const filePromises = validFiles.map(async (file) => {
         return new Promise((resolve) => {
-          if (file.type.includes('image')) {
-            // For images, convert to base64 for GPT-4V analysis
-            const reader = new FileReader()
-            reader.onload = (e) => {
-              resolve({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                content: e.target.result, // base64 data URL
-                isImage: true
-              })
-            }
-            reader.readAsDataURL(file)
-          } else if (file.type.includes('pdf')) {
-            // For PDFs, just send metadata - don't base64 encode (too large and not needed)
+          const reader = new FileReader()
+          reader.onload = (e) => {
             resolve({
               name: file.name,
               type: file.type,
               size: file.size,
-              isPDF: true
+              content: e.target.result, // base64 data URL
+              isImage: file.type.includes('image'),
+              isPDF: file.type.includes('pdf')
             })
           }
+          reader.readAsDataURL(file)
         })
       })
 
@@ -96,7 +86,7 @@ export default function ChatWidget({ embedded = false }) {
       
       setMessages(prev => [...prev, fileMessage])
       
-      // Send for analysis with actual file content (only images have content)
+      // Send for analysis with actual file content (both images and PDFs)
       await send(fileAnalysisMessage, uploadedFileData)
       
     } catch (error) {

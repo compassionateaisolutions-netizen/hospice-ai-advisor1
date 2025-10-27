@@ -74,7 +74,7 @@ export default async function handler(req, res) {
       }
     ]
 
-    // Add images if present
+    // Add files if present (images and PDFs)
     if (files && files.length > 0) {
       const imageFiles = files.filter(f => f.isImage)
       const pdfFiles = files.filter(f => f.isPDF)
@@ -91,13 +91,17 @@ export default async function handler(req, res) {
         }
       })
 
-      // Add PDF info as text
-      if (pdfFiles.length > 0) {
-        messageContent.push({
-          type: 'text',
-          text: `\n\nUploaded PDF files: ${pdfFiles.map(f => f.name).join(', ')}`
-        })
-      }
+      // Add PDF data as text attachments
+      pdfFiles.forEach(file => {
+        if (file.content) {
+          // Extract base64 content from data URL (format: "data:application/pdf;base64,...")
+          const base64Content = file.content.split(',')[1] || file.content
+          messageContent.push({
+            type: 'text',
+            text: `[PDF File: ${file.name}]\n[Base64 encoded PDF content for analysis]\n${base64Content.substring(0, 500)}...`
+          })
+        }
+      })
     }
 
     // Post message to thread
