@@ -1,7 +1,13 @@
 // pages/api/chat-assistant.js
 // Uses OpenAI Assistants API to run your custom GPT directly on your website
 
-const ASSISTANT_ID = 'asst_8vaxKnJ0KbwzHdHyn1gguwIt'
+const ASSISTANT_ID = 'asst_PnRjwOpCl1o6LGSQnQeEejs5'
+
+// Polyfill fetch for Node.js if not available
+if (!globalThis.fetch) {
+  const nodeFetch = require('node-fetch')
+  globalThis.fetch = nodeFetch
+}
 
 export default async function handler(req, res) {
   // CORS headers
