@@ -188,10 +188,10 @@ export default async function handler(req, res) {
       input: [
         {
           role: 'user',
-          content: userContent,
-          ...(attachments.length > 0 ? { attachments } : {})
+          content: userContent
         }
       ],
+      ...(attachments.length > 0 ? { attachments } : {}),
       ...(threadId ? { conversation: { id: threadId } } : {})
     }
 
