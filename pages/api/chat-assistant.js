@@ -36,33 +36,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key not configured' })
     }
 
-    const headers = {
-      'Authorization': `Bearer ${apiKey}`,
-      'OpenAI-Beta': 'assistants=v2'
-    }
-
-    let thread_id = threadId
-
-    // Step 1: Create thread if needed
-    if (!thread_id) {
-      console.log('Creating new thread...')
-      const threadRes = await fetch('https://api.openai.com/v1/threads', {
-        method: 'POST',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
-      })
-
-      if (!threadRes.ok) {
-        const err = await threadRes.text()
-        throw new Error(`Thread creation failed: ${threadRes.status} - ${err}`)
-      }
-
-      const threadData = await threadRes.json()
-      thread_id = threadData.id
-      console.log('Thread created:', thread_id)
-    }
-
-    // Step 2: Upload files if present (PDFs, images, etc.)
+    // Upload files if present (PDFs, images, etc.)
     const uploadedFileIds = []
 
     if (files && files.length > 0) {
@@ -126,113 +100,60 @@ export default async function handler(req, res) {
       console.log(`Successfully uploaded ${uploadedFileIds.length} files`)
     }
 
-    // Step 3: Add message to thread with file attachments
-    console.log('Adding message to thread...')
-
-    const messagePayload = {
-      role: 'user',
-      content: message
+    // Build Responses API payload to mimic ChatGPT behaviour
+    const headers = {
+      'Authorization': `Bearer ${apiKey}`,
+      'OpenAI-Beta': 'assistants=v2',
+      'Content-Type': 'application/json'
     }
 
-    if (uploadedFileIds.length > 0) {
-      messagePayload.attachments = uploadedFileIds.map(f => ({
-        file_id: f.id,
-        tools: [{ type: 'file_search' }]
-      }))
-      console.log(`Attaching ${uploadedFileIds.length} files to message`)
+    const userContent = [{ type: 'input_text', text: message }]
+    const attachments = uploadedFileIds.map(f => ({
+      file_id: f.id,
+      tools: [{ type: 'file_search' }]
+    }))
+
+    const payload = {
+      model: ASSISTANT_ID,
+      input: [
+        {
+          role: 'user',
+          content: userContent,
+          ...(attachments.length > 0 ? { attachments } : {})
+        }
+      ],
+      ...(threadId ? { conversation: { id: threadId } } : {})
     }
 
-    const msgRes = await fetch(
-      `https://api.openai.com/v1/threads/${thread_id}/messages`,
-      {
-        method: 'POST',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify(messagePayload)
-      }
-    )
+    console.log('Sending request to Responses API...')
+    const responseRes = await fetch('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload)
+    })
 
-    if (!msgRes.ok) {
-      const err = await msgRes.text()
-      throw new Error(`Message failed: ${msgRes.status} - ${err}`)
+    if (!responseRes.ok) {
+      const errText = await responseRes.text()
+      throw new Error(`Responses API failed: ${responseRes.status} - ${errText}`)
     }
 
-    console.log('Message added')
+    const responseData = await responseRes.json()
 
-    // Step 4: Run assistant
-    console.log('Running assistant...')
-    const runRes = await fetch(
-      `https://api.openai.com/v1/threads/${thread_id}/runs`,
-      {
-        method: 'POST',
-        headers: { ...headers, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          assistant_id: ASSISTANT_ID,
-          tools: [{ type: 'file_search' }]
-        })
-      }
-    )
-
-    if (!runRes.ok) {
-      const err = await runRes.text()
-      throw new Error(`Run failed: ${runRes.status} - ${err}`)
-    }
-
-    const runData = await runRes.json()
-    const run_id = runData.id
-    console.log('Run started:', run_id)
-
-    // Step 5: Poll for completion (longer timeout for file processing)
-    console.log('Polling for response...')
-    let completed = false
-    let attempts = 0
-    const maxAttempts = 300 // 150 seconds for large files
-
-    while (!completed && attempts < maxAttempts) {
-      await new Promise(r => setTimeout(r, 500))
-
-      const statusRes = await fetch(
-        `https://api.openai.com/v1/threads/${thread_id}/runs/${run_id}`,
-        { method: 'GET', headers: { ...headers, 'Content-Type': 'application/json' } }
-      )
-
-      if (!statusRes.ok) {
-        throw new Error(`Status check failed: ${statusRes.status}`)
-      }
-
-      const statusData = await statusRes.json()
-
-      if (statusData.status === 'completed') {
-        completed = true
-        console.log('✓ Run completed')
-      } else if (statusData.status === 'failed' || statusData.status === 'cancelled') {
-        throw new Error(`Run ${statusData.status}`)
-      }
-
-      attempts++
-    }
-
-    if (!completed) {
-      throw new Error('Response timeout')
-    }
-
-    // Step 6: Get response
-    console.log('Fetching response...')
-    const msgsRes = await fetch(
-      `https://api.openai.com/v1/threads/${thread_id}/messages?limit=1`,
-      { method: 'GET', headers: { ...headers, 'Content-Type': 'application/json' } }
-    )
-
-    if (!msgsRes.ok) {
-      throw new Error(`Messages fetch failed: ${msgsRes.status}`)
-    }
-
-    const msgsData = await msgsRes.json()
-    const lastMsg = msgsData.data[0]
+    const conversationId = responseData?.conversation?.id || threadId || null
 
     let responseText = ''
-    if (lastMsg?.content?.[0]?.type === 'text') {
-      responseText = lastMsg.content[0].text.value || lastMsg.content[0].text
+    if (Array.isArray(responseData?.output)) {
+      for (const item of responseData.output) {
+        if (!item?.content) continue
+        for (const part of item.content) {
+          if (part?.type === 'output_text' && part?.text) {
+            responseText += part.text
+          }
+        }
+      }
     }
+
+    responseText = responseText.trim()
 
     if (!responseText) {
       throw new Error('No response text received')
@@ -241,7 +162,7 @@ export default async function handler(req, res) {
     console.log('✓ Response received')
     res.status(200).json({
       message: responseText,
-      threadId: thread_id,
+      threadId: conversationId,
       filesUploaded: uploadedFileIds.length
     })
 

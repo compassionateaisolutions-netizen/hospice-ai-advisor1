@@ -118,14 +118,16 @@ export default function ChatWidget({ embedded = false }) {
   const send = async (messageText = null, fileData = null) => {
     const actualMessage = messageText || input
     
-    // VALIDATION: Ensure message is a string
-    if (typeof actualMessage !== 'string' || !actualMessage.trim()) {
-      if (!fileData) {
-        return // Don't send empty messages without files
-      }
+    // VALIDATION: Ensure we have something to send
+    const hasMessage = actualMessage && String(actualMessage).trim().length > 0
+    const potentialFiles = fileData || (uploadedFiles.length > 0 ? [...uploadedFiles] : undefined)
+    const hasFiles = Array.isArray(potentialFiles) && potentialFiles.length > 0
+    
+    if (!hasMessage && !hasFiles) {
+      return // Don't send empty messages without files
     }
     
-    const actualFiles = fileData || (uploadedFiles.length > 0 ? [...uploadedFiles] : undefined)
+    const actualFiles = potentialFiles
     
     // Only add user message if it's a manual send (not automatic from file upload)
     if (!messageText) {
@@ -142,13 +144,15 @@ export default function ChatWidget({ embedded = false }) {
 
     try {
       // Call the Assistants API endpoint
+      const finalMessage = hasMessage ? String(actualMessage).trim() : 'Please analyze the uploaded file(s)'
+      
       const response = await fetch('/api/chat-assistant', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          message: String(actualMessage).trim(),
+          message: finalMessage,
           files: actualFiles,
           threadId: threadId // Pass current thread for conversation continuity
         }),
