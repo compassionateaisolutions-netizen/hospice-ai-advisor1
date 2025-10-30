@@ -161,10 +161,23 @@ export default function ChatWidget({ embedded = false }) {
       }])
     } catch (error) {
       console.error('Chat error:', error)
+      
+      // Check if we got a response with error details
+      let errorMessage = 'Sorry, I encountered an error. Please try again.'
+      
+      try {
+        const errorData = await response?.json()
+        if (errorData?.error) {
+          errorMessage = `Error: ${errorData.error}`
+        }
+      } catch (e) {
+        // Ignore parsing errors, use default message
+      }
+      
       setMessages((m) => [...m, { 
         id: Date.now() + 1, 
         from: 'bot', 
-        text: 'Sorry, I encountered an error. Please try again.' 
+        text: errorMessage
       }])
     }
   }
