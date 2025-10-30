@@ -34,22 +34,22 @@ export default function ChatWidget({ embedded = false }) {
 
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files)
-    // Only accept images, NOT PDFs (to avoid large payloads)
+    // Accept both PDFs and images
     const validFiles = files.filter(file => {
-      const isValidType = file.type.includes('image')
-      const isValidSize = file.size <= 10 * 1024 * 1024 // 10MB limit
+      const isValidType = file.type.includes('pdf') || file.type.includes('image')
+      const isValidSize = file.size <= 50 * 1024 * 1024 // 50MB limit for PDFs
       return isValidType && isValidSize
     })
 
     if (validFiles.length === 0) {
-      alert('Please upload valid image files (PNG, JPG, GIF, etc.) under 10MB.\n\nFor PDFs, please copy and paste the text content into the chat.')
+      alert('Please upload valid PDF or image files (under 50MB)')
       return
     }
 
     setIsUploading(true)
     
     try {
-      // Process each image file - convert to base64 for GPT-4V analysis
+      // Process each file - convert to base64
       const filePromises = validFiles.map(async (file) => {
         return new Promise((resolve) => {
           const reader = new FileReader()
@@ -59,8 +59,8 @@ export default function ChatWidget({ embedded = false }) {
               type: file.type,
               size: file.size,
               content: e.target.result, // base64 data URL
-              isImage: true,
-              isPDF: false
+              isImage: file.type.includes('image'),
+              isPDF: file.type.includes('pdf')
             })
           }
           reader.readAsDataURL(file)
@@ -70,10 +70,21 @@ export default function ChatWidget({ embedded = false }) {
       const uploadedFileData = await Promise.all(filePromises)
       setUploadedFiles(prev => [...prev, ...uploadedFileData])
       
-      // Create analysis message with file information
+      // Create analysis message
       const fileList = uploadedFileData.map(f => f.name).join(', ')
+      const pdfFiles = uploadedFileData.filter(f => f.isPDF)
+      const imageFiles = uploadedFileData.filter(f => f.isImage)
       
-      const fileAnalysisMessage = `I have uploaded image(s) for hospice eligibility analysis: ${fileList}. Please analyze these images and provide a comprehensive hospice eligibility assessment based on what you can see, including specific clinical indicators, documentation quality, and CMS compliance evaluation.`
+      let fileAnalysisMessage = `I have uploaded ${uploadedFileData.length} file(s) for analysis: ${fileList}. `
+      
+      if (pdfFiles.length > 0) {
+        fileAnalysisMessage += `PDF files: ${pdfFiles.map(f => f.name).join(', ')}. `
+      }
+      if (imageFiles.length > 0) {
+        fileAnalysisMessage += `Images: ${imageFiles.map(f => f.name).join(', ')}. `
+      }
+      
+      fileAnalysisMessage += `Please provide a comprehensive hospice eligibility assessment based on this patient information, including specific clinical indicators, documentation quality, and CMS compliance evaluation.`
       
       // Add user message
       const fileMessage = {
@@ -85,12 +96,12 @@ export default function ChatWidget({ embedded = false }) {
       
       setMessages(prev => [...prev, fileMessage])
       
-      // Send for analysis with actual image content
+      // Send for analysis with all file content
       await send(fileAnalysisMessage, uploadedFileData)
       
     } catch (error) {
       console.error('Upload error:', error)
-      alert('Failed to upload images. Please try again.')
+      alert('Failed to upload files. Please try again.')
     } finally {
       setIsUploading(false)
       setUploadedFiles([])
