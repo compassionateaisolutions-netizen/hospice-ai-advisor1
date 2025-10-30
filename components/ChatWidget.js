@@ -138,11 +138,20 @@ export default function ChatWidget({ embedded = false }) {
         }),
       })
 
-      const data = await response.json()
+      let data
+      try {
+        data = await response.json()
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError)
+        throw new Error(`Failed to parse API response: ${response.statusText}`)
+      }
+      
+      console.log('API Response:', { status: response.status, data })
       
       if (!response.ok) {
         // Extract error message from response
-        const errorMsg = data.error || `API Error: ${response.status}`
+        const errorMsg = data?.error || data?.message || `API Error: ${response.status}`
+        console.error('API Error Details:', errorMsg)
         throw new Error(errorMsg)
       }
       
@@ -162,9 +171,10 @@ export default function ChatWidget({ embedded = false }) {
         text: messageText 
       }])
     } catch (error) {
-      console.error('Chat error:', error.message)
+      console.error('Chat error details:', error)
       
-      let errorMessage = error.message || 'Sorry, I encountered an error. Please try again.'
+      let errorMessage = error?.message || 'Sorry, I encountered an error. Please try again.'
+      console.error('Final error message shown to user:', errorMessage)
       
       setMessages((m) => [...m, { 
         id: Date.now() + 1, 
