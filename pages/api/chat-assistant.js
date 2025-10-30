@@ -1,5 +1,5 @@
 // pages/api/chat-assistant.js
-// Uses OpenAI Assistants API with file uploads
+// Uses OpenAI Assistants API - SIMPLIFIED (no file uploads, only images via base64)
 
 const ASSISTANT_ID = 'asst_PnRjwOpCl1o6LGSQnQeEejs5'
 
