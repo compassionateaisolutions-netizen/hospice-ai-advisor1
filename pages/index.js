@@ -425,6 +425,15 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            <div className="mt-10">
+              <div className="p-10 bg-white rounded-2xl shadow-xl border border-indigo-100">
+                <h3 className="text-2xl font-semibold text-indigo-700 mb-4 text-center">Patient Privacy Commitment</h3>
+                <p className="text-lg text-gray-700 mb-4 text-center">At Compassionate Care Advisor, protecting patient privacy is our highest priority. The system does not store, retain, or share any patient information. All data provided during an assessment is used solely for determining hospice eligibility based on established clinical criteria and decision trees.</p>
+                <p className="text-lg text-gray-700 mb-4 text-center">To maintain confidentiality and comply with HIPAA standards, please ensure that any information entered is de-identified — meaning it should not include names, dates of birth, addresses, or any other personally identifiable information.</p>
+                <p className="text-lg text-gray-700 text-center">The Compassionate Care Advisor processes only the minimum information necessary to evaluate hospice criteria and immediately discards all data after the assessment is complete.</p>
+              </div>
+            </div>
           </div>
         </section>
 
