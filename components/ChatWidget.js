@@ -117,9 +117,15 @@ export default function ChatWidget({ embedded = false }) {
 
   const send = async (messageText = null, fileData = null) => {
     const actualMessage = messageText || input
-    const actualFiles = fileData || (uploadedFiles.length > 0 ? [...uploadedFiles] : undefined)
     
-    if (!actualMessage.trim() && !actualFiles) return
+    // VALIDATION: Ensure message is a string
+    if (typeof actualMessage !== 'string' || !actualMessage.trim()) {
+      if (!fileData) {
+        return // Don't send empty messages without files
+      }
+    }
+    
+    const actualFiles = fileData || (uploadedFiles.length > 0 ? [...uploadedFiles] : undefined)
     
     // Only add user message if it's a manual send (not automatic from file upload)
     if (!messageText) {
@@ -142,7 +148,7 @@ export default function ChatWidget({ embedded = false }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          message: actualMessage,
+          message: String(actualMessage).trim(),
           files: actualFiles,
           threadId: threadId // Pass current thread for conversation continuity
         }),

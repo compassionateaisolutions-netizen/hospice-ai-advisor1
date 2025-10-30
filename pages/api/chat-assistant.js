@@ -25,8 +25,8 @@ export default async function handler(req, res) {
 
   const { message, files, threadId } = req.body
 
-  if (!message || typeof message !== 'string') {
-    return res.status(400).json({ error: 'Invalid message' })
+  if (!message || typeof message !== 'string' || !message.trim()) {
+    return res.status(400).json({ error: 'Message is required and must be a non-empty string' })
   }
 
   try {
