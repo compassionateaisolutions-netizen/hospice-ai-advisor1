@@ -138,11 +138,13 @@ export default function ChatWidget({ embedded = false }) {
         }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to get response')
-      }
-
       const data = await response.json()
+      
+      if (!response.ok) {
+        // Extract error message from response
+        const errorMsg = data.error || `API Error: ${response.status}`
+        throw new Error(errorMsg)
+      }
       
       // Update thread ID for subsequent messages
       if (data.threadId) {
@@ -160,19 +162,9 @@ export default function ChatWidget({ embedded = false }) {
         text: messageText 
       }])
     } catch (error) {
-      console.error('Chat error:', error)
+      console.error('Chat error:', error.message)
       
-      // Check if we got a response with error details
-      let errorMessage = 'Sorry, I encountered an error. Please try again.'
-      
-      try {
-        const errorData = await response?.json()
-        if (errorData?.error) {
-          errorMessage = `Error: ${errorData.error}`
-        }
-      } catch (e) {
-        // Ignore parsing errors, use default message
-      }
+      let errorMessage = error.message || 'Sorry, I encountered an error. Please try again.'
       
       setMessages((m) => [...m, { 
         id: Date.now() + 1, 
