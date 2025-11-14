@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import Image from 'next/image'
 import ChatWidget from '../components/ChatWidget'
 
 export default function Home() {
@@ -12,7 +13,9 @@ export default function Home() {
       <header className="bg-white border-b sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded flex items-center justify-center text-white font-bold">CA</div>
+            <div className="w-10 h-10 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
+              <Image src="/logo.svg" alt="Compassionate Care Advisor logo" width={40} height={40} className="object-contain" />
+            </div>
             <h1 className="text-xl font-semibold">Compassionate Care Advisor</h1>
           </div>
           <nav className="hidden md:flex items-center space-x-6 text-sm">
@@ -57,7 +60,9 @@ export default function Home() {
             <div className="bg-white rounded-lg shadow-lg border max-w-2xl mx-auto">
               <div className="flex items-center justify-between px-6 py-4 bg-indigo-600 text-white rounded-t-lg">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded flex items-center justify-center font-semibold">CA</div>
+                  <div className="w-10 h-10 bg-white/20 rounded overflow-hidden flex items-center justify-center">
+                    <Image src="/logo.svg" alt="Compassionate Care Advisor logo" width={40} height={40} className="object-contain" />
+                  </div>
                   <div>
                     <div className="font-semibold">Compassionate Care Advisor</div>
                     <div className="text-sm opacity-90">Ask about fraud reduction & eligibility</div>

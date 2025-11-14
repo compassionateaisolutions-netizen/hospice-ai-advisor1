@@ -75,7 +75,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { message, files, threadId } = req.body
+  const { message, files, threadId, fileIds: existingFileIdsRaw } = req.body
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return res.status(400).json({ error: 'Message is required and must be a non-empty string' })
@@ -88,8 +88,8 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key not configured' })
     }
 
-    // Upload files if present (PDFs, images, etc.)
-    const uploadedFileIds = []
+  // Upload files if present (PDFs, images, etc.)
+  const uploadedFileIds = []
 
     if (files && files.length > 0) {
       console.log(`Uploading ${files.length} files...`)
@@ -162,24 +162,94 @@ export default async function handler(req, res) {
     }
 
     const userContent = [{ type: 'input_text', text: message }]
-    const attachments = uploadedFileIds.map(f => ({
-      file_id: f.id,
-      tools: [{ type: 'file_search' }]
-    }))
 
-    const tools = Array.isArray(assistantConfig?.tools)
+    const assistantTools = Array.isArray(assistantConfig?.tools)
       ? assistantConfig.tools.map(tool => ({ ...tool }))
       : []
 
-    const hasFileSearchTool = tools.some(tool => tool?.type === 'file_search')
-    if (attachments.length > 0 && !hasFileSearchTool) {
-      tools.push({ type: 'file_search' })
+    // Sanitize file_search tools: the Responses API requires vector_store_ids. If the assistant
+    // configuration lacks them, drop the tool entirely to avoid 400 errors. We'll reformat the
+    // tool if vector_store_ids live under the nested file_search object.
+    const tools = assistantTools.reduce((acc, rawTool) => {
+      if (!rawTool || typeof rawTool !== 'object') {
+        return acc
+      }
+
+      if (rawTool.type !== 'file_search') {
+        acc.push(rawTool)
+        return acc
+      }
+
+      const vectorIds = Array.isArray(rawTool.vector_store_ids)
+        ? rawTool.vector_store_ids
+        : Array.isArray(rawTool?.file_search?.vector_store_ids)
+          ? rawTool.file_search.vector_store_ids
+          : []
+
+      if (vectorIds.length === 0) {
+        console.warn('Dropping assistant file_search tool without vector_store_ids to prevent API errors')
+        return acc
+      }
+
+      const { file_search: _legacyConfig, ...rest } = rawTool
+
+      const sanitized = {
+        type: 'file_search',
+        vector_store_ids: vectorIds,
+        ...rest
+      }
+
+      acc.push(sanitized)
+      return acc
+    }, [])
+
+    const incomingFileIds = Array.isArray(existingFileIdsRaw)
+      ? existingFileIdsRaw
+          .filter((id) => typeof id === 'string' && id.trim().length > 0)
+          .map((id) => id.trim())
+      : []
+
+    const newFileIds = uploadedFileIds.map((file) => file.id)
+    const allFileIds = Array.from(new Set([...incomingFileIds, ...newFileIds]))
+
+    if (allFileIds.length > 0) {
+      for (const fileId of allFileIds) {
+        userContent.push({ type: 'input_file', file_id: fileId })
+      }
     }
 
     const privacyStatement = 'At Compassionate Care Advisor, protecting patient privacy is our highest priority. The system does not store, retain, or share any patient information. All data provided during an assessment is used solely for determining hospice eligibility based on established clinical criteria and decision trees.\n\nTo maintain confidentiality and comply with HIPAA standards, please ensure that any information entered is de-identified — meaning it should not include names, dates of birth, addresses, or any other personally identifiable information.\n\nThe Compassionate Care Advisor processes only the minimum information necessary to evaluate hospice criteria and immediately discards all data after the assessment is complete.'
 
-    const instructionsFromAssistant = assistantConfig?.instructions ? `${assistantConfig.instructions}\n\n` : ''
-    const combinedInstructions = `${instructionsFromAssistant}When addressing questions about privacy, data handling, or the ability to process uploaded information, reassure the user using the following statement verbatim, unless context requires a shorter acknowledgment: "${privacyStatement}"`
+  const instructionsFromAssistant = assistantConfig?.instructions ? `${assistantConfig.instructions}\n\n` : ''
+
+  const hospiceGuidance = `Always act as the Compassionate Care Advisor. When a user uploads clinical PDFs or images, you must:
+
+1. Read the entire document set. Reference key evidence with page numbers in the format (p. X) or (pp. X–Y).
+2. Capture objective data in a "Key Clinical Findings" section. Include diagnoses, recent hospital course, vitals, weight trends, labs (INR, albumin, creatinine, bilirubin, etc.), symptoms, ascites/paracenteses, encephalopathy, infections, and any specialist notes. If data are missing, state "Not reported".
+3. Produce a "Hospice Eligibility Review" that maps the findings against disease-specific CMS criteria (liver, cardiac, pulmonary, renal, neuro, malignancy, HIV) and secondary domains (Palliative Performance Scale, ADLs, nutritional decline, co-morbid burden, psychosocial factors). Explicitly call out each criterion that is satisfied.
+4. Include a "Documentation Quality & Gaps" section noting missing key labs, consults, or imaging that would strengthen the record.
+5. Finish with a "Conclusion" that clearly states whether the patient meets hospice eligibility, how urgent the referral is, and recommended next steps for the care team.
+6. Bring in relevant context from the Compassionate Care Advisor knowledge base (clinical guidelines, regulatory expectations, best practices) to justify the assessment when appropriate.
+7. If the files cannot be processed or lack sufficient data, say so plainly and request the specific items needed (e.g., updated labs, PPS score, imaging).
+
+Use the following response structure unless the user explicitly requests a different format:
+- Start with a single line status banner using emojis exactly as follows:
+  - "✅ Hospice Eligibility Determination: MET" when criteria are satisfied.
+  - "⚠️ Hospice Eligibility Determination: UNCERTAIN" when evidence is incomplete or borderline.
+  - "❌ Hospice Eligibility Determination: NOT MET" when criteria are not satisfied.
+- Provide sections in this order with level-two Markdown headings (e.g., "## Primary Criteria"). Within each section use bullet lists that mirror ChatGPT formatting with clear parenthetical notes for thresholds, and indent sub-bullets with two spaces for clarity.
+  1. Primary Criteria (disease-specific checkpoints and whether each threshold is met).
+  2. Secondary Criteria (supporting disease findings such as ascites, encephalopathy, etc.).
+  3. Supportive Prognostic Indicators (nutrition, PPS, ADLs, clinical trajectory). Include values and explicit statements when criteria are not met or "Not reported".
+  4. Comorbid Conditions (bullet list summarizing relevant diagnoses influencing prognosis).
+  5. Documentation Quality & Gaps (bullet list of missing data, recommended records to obtain).
+  6. Conclusion & Recommendations (succinct next steps, referral urgency, family communication guidance).
+- Use horizontal dividers of three dashes ("---") between major sections to mimic ChatGPT-style separators.
+- Retain concise, evidence-linked sentences. When citing evidence from files, append references like (p. 4) at the end of the bullet.
+
+Keep the tone clinical yet compassionate. Avoid hedging language unless the evidence is incomplete. Do not repeat disclaimers unless the user asks about privacy.`
+
+  const combinedInstructions = `${instructionsFromAssistant}${hospiceGuidance}\n\nWhen addressing questions about privacy, data handling, or the ability to process uploaded information, reassure the user using the following statement verbatim, unless context requires a shorter acknowledgment: "${privacyStatement}"`
 
     const payload = {
       model: assistantConfig?.model || 'gpt-4.1',
@@ -191,9 +261,10 @@ export default async function handler(req, res) {
           content: userContent
         }
       ],
-      ...(attachments.length > 0 ? { attachments } : {}),
-      ...(threadId ? { conversation: { id: threadId } } : {})
+  ...(threadId ? { conversation: { id: threadId } } : {})
     }
+
+  console.log('Responses payload tools:', JSON.stringify(tools))
 
     console.log('Sending request to Responses API...')
     const responseRes = await fetch('https://api.openai.com/v1/responses', {
@@ -235,7 +306,8 @@ export default async function handler(req, res) {
     res.status(200).json({
       message: responseText,
       threadId: conversationId,
-      filesUploaded: uploadedFileIds.length
+      filesUploaded: uploadedFileIds.length,
+      ...(allFileIds.length ? { fileIds: allFileIds } : {})
     })
 
   } catch (error) {

@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 function ChatBubble({ onClick }) {
   return (
@@ -7,6 +10,49 @@ function ChatBubble({ onClick }) {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 3.866-4.03 7-9 7-1.02 0-1.99-.105-2.9-.304L3 21l1.304-5.1A9.954 9.954 0 013 12c0-3.866 4.03-7 9-7s9 3.134 9 7z" />
       </svg>
     </button>
+  )
+}
+
+const markdownComponents = {
+  h2: ({ children }) => (
+    <h2 className="text-lg font-semibold text-gray-900 mt-4 mb-2 flex items-center gap-2">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }) => (
+    <h3 className="text-base font-semibold text-gray-900 mt-3 mb-2">
+      {children}
+    </h3>
+  ),
+  p: ({ children }) => (
+    <p className="text-gray-800 leading-relaxed mb-3 last:mb-0">
+      {children}
+    </p>
+  ),
+  ul: ({ children }) => (
+    <ul className="list-disc pl-5 space-y-2 text-gray-800">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }) => (
+    <ol className="list-decimal pl-5 space-y-2 text-gray-800">
+      {children}
+    </ol>
+  ),
+  li: ({ children }) => (
+    <li className="pl-1 leading-relaxed">{children}</li>
+  ),
+  strong: ({ children }) => (
+    <strong className="font-semibold text-gray-900">
+      {children}
+    </strong>
+  ),
+  em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
+  hr: () => <hr className="my-4 border-t border-gray-200" />,
+  blockquote: ({ children }) => (
+    <blockquote className="border-l-4 border-indigo-200 pl-3 text-gray-700 italic">
+      {children}
+    </blockquote>
   )
 }
 
@@ -19,17 +65,18 @@ export default function ChatWidget({ embedded = false }) {
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [isUploading, setIsUploading] = useState(false)
   const [threadId, setThreadId] = useState(null) // Store thread ID for conversation continuity
+  const [fileIds, setFileIds] = useState([])
   const endRef = useRef(null)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
-    // Only scroll within the chat container, not the whole page
-    if (endRef.current) {
-      const chatContainer = endRef.current.closest('#chat-window')
-      if (chatContainer) {
-        chatContainer.scrollTop = chatContainer.scrollHeight
-      }
-    }
+    if (!endRef.current) return
+
+    const chatContainer = endRef.current.closest('#chat-window')
+    if (!chatContainer) return
+
+    // Reset scroll to top so users see the start of the latest assistant reply
+    chatContainer.scrollTo({ top: 0, behavior: 'smooth' })
   }, [messages])
 
   const handleFileUpload = async (event) => {
@@ -154,7 +201,8 @@ export default function ChatWidget({ embedded = false }) {
         body: JSON.stringify({ 
           message: finalMessage,
           files: actualFiles,
-          threadId: threadId // Pass current thread for conversation continuity
+          threadId: threadId, // Pass current thread for conversation continuity
+          fileIds: fileIds.length > 0 ? fileIds : undefined
         }),
       })
 
@@ -178,6 +226,10 @@ export default function ChatWidget({ embedded = false }) {
       // Update thread ID for subsequent messages
       if (data.threadId) {
         setThreadId(data.threadId)
+      }
+
+      if (Array.isArray(data.fileIds)) {
+        setFileIds(data.fileIds)
       }
       
       // Handle both message formats (nested or direct)
@@ -216,7 +268,9 @@ export default function ChatWidget({ embedded = false }) {
           {!embedded && (
             <div className="flex items-center justify-between px-4 py-3 bg-indigo-600 text-white rounded-t-lg">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center font-semibold">CA</div>
+                <div className="w-8 h-8 bg-white/20 rounded overflow-hidden flex items-center justify-center">
+                  <Image src="/logo.svg" alt="Compassionate Care logo" width={32} height={32} className="object-contain" />
+                </div>
                 <div>
                   <div className="font-semibold">Hospice AI Advisor</div>
                   <div className="text-xs opacity-80">Ask me about fraud reduction & eligibility</div>
@@ -231,8 +285,15 @@ export default function ChatWidget({ embedded = false }) {
           <div className={`p-4 overflow-y-auto ${embedded ? 'h-96' : 'h-64'}`} id="chat-window">
             {messages.map((m) => (
               <div key={m.id} className={`mb-3 flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`${m.from === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-900'} max-w-[80%] p-3 rounded-lg`}>
-                  <div>{m.text}</div>
+                <div className={`${m.from === 'user' 
+                  ? 'bg-indigo-600 text-white shadow-md' 
+                  : 'bg-white text-gray-900 border border-gray-200 shadow-sm'} max-w-[85%] p-4 rounded-xl leading-relaxed`}> 
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={m.from === 'user' ? undefined : markdownComponents}
+                  >
+                    {m.text}
+                  </ReactMarkdown>
                   {m.files && m.files.length > 0 && (
                     <div className="mt-2 space-y-1">
                       {m.files.map((file, index) => (
