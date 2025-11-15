@@ -269,8 +269,29 @@ export default function ChatWidget({ embedded = false }) {
         throw new Error(errorMessage)
       }
 
-      if (!response.body) {
-        throw new Error('Streaming is not supported in this browser.')
+      const contentType = response.headers.get('content-type') || ''
+      const isStream = contentType.includes('text/event-stream') && typeof response.body?.getReader === 'function'
+
+      if (!isStream) {
+        const data = await response.json()
+
+        if (data.threadId) {
+          setThreadId(data.threadId)
+        }
+        if (Array.isArray(data.fileIds)) {
+          setFileIds(data.fileIds)
+        }
+
+        const messageText = typeof data.message === 'string'
+          ? data.message
+          : data.message?.value || data.message
+
+        const fallbackText = messageText && String(messageText).trim().length > 0
+          ? messageText
+          : 'Sorry, I did not receive a response. Please try again.'
+
+        finalizeBotMessage(botMessageId, { text: fallbackText })
+        return
       }
 
       const reader = response.body.getReader()
@@ -279,6 +300,7 @@ export default function ChatWidget({ embedded = false }) {
       let doneReading = false
       let latestThreadId = threadId
       let latestFileIds = Array.isArray(fileIds) ? [...fileIds] : []
+      let accumulatedText = ''
 
       while (!doneReading) {
         const { value, done } = await reader.read()
@@ -312,7 +334,11 @@ export default function ChatWidget({ embedded = false }) {
             const parsed = JSON.parse(dataStr)
 
             if (parsed.event === 'delta') {
-              appendToBotMessage(botMessageId, parsed.textDelta || '')
+              const delta = parsed.textDelta || ''
+              if (delta) {
+                accumulatedText += delta
+                appendToBotMessage(botMessageId, delta)
+              }
             } else if (parsed.event === 'meta') {
               if (parsed.threadId) {
                 latestThreadId = parsed.threadId
@@ -337,7 +363,11 @@ export default function ChatWidget({ embedded = false }) {
         setFileIds(Array.from(new Set(latestFileIds)))
       }
 
-      finalizeBotMessage(botMessageId)
+      const finalText = accumulatedText.trim().length > 0
+        ? accumulatedText
+        : 'Sorry, I did not receive a response. Please try again.'
+
+      finalizeBotMessage(botMessageId, { text: finalText })
     } catch (error) {
       console.error('Chat error details:', error)
       const errorMessage = error?.message || 'Sorry, I encountered an error. Please try again.'
