@@ -410,12 +410,19 @@ export default function ChatWidget({ embedded = false }) {
                 <div className={`${m.from === 'user' 
                   ? 'bg-indigo-600 text-white shadow-md' 
                   : 'bg-white text-gray-900 border border-gray-200 shadow-sm'} max-w-[85%] p-4 rounded-xl leading-relaxed`}> 
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]}
-                    components={m.from === 'user' ? undefined : markdownComponents}
-                  >
-                    {m.text}
-                  </ReactMarkdown>
+                  {m.streaming && (!m.text || m.text.trim().length === 0) ? (
+                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                      <div className="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
+                      <span>Thinking…</span>
+                    </div>
+                  ) : (
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={m.from === 'user' ? undefined : markdownComponents}
+                    >
+                      {m.text}
+                    </ReactMarkdown>
+                  )}
                   {m.files && m.files.length > 0 && (
                     <div className="mt-2 space-y-1">
                       {m.files.map((file, index) => (
