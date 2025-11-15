@@ -264,13 +264,25 @@ Keep the tone clinical yet compassionate. Avoid hedging language unless the evid
   ...(threadId ? { conversation: { id: threadId } } : {})
     }
 
-  console.log('Responses payload tools:', JSON.stringify(tools))
+    payload.stream = true
+
+    console.log('Responses payload tools:', JSON.stringify(tools))
 
     console.log('Sending request to Responses API...')
+
+    const abortController = new AbortController()
+    req.on('aborted', () => {
+      abortController.abort()
+    })
+
     const responseRes = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
-      headers,
-      body: JSON.stringify(payload)
+      headers: {
+        ...headers,
+        Accept: 'text/event-stream'
+      },
+      body: JSON.stringify(payload),
+      signal: abortController.signal
     })
 
     if (!responseRes.ok) {
@@ -278,37 +290,127 @@ Keep the tone clinical yet compassionate. Avoid hedging language unless the evid
       throw new Error(`Responses API failed: ${responseRes.status} - ${errText}`)
     }
 
-    const responseData = await responseRes.json()
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache, no-transform')
+    res.setHeader('Connection', 'keep-alive')
 
-    const conversationId = responseData?.conversation?.id || threadId || null
+    if (typeof res.flushHeaders === 'function') {
+      res.flushHeaders()
+    }
 
-    let responseText = ''
+    const sendEvent = (data) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`)
+      if (typeof res.flush === 'function') {
+        res.flush()
+      }
+    }
 
-    if (typeof responseData?.output_text === 'string' && responseData.output_text.trim()) {
-      responseText = responseData.output_text.trim()
-    } else if (Array.isArray(responseData?.output)) {
-      for (const item of responseData.output) {
-        if (!item?.content) continue
-        for (const part of item.content) {
-          if (part?.type === 'output_text' && part?.text) {
-            responseText += part.text
+    const reader = responseRes.body?.getReader()
+    if (!reader) {
+      throw new Error('Unable to read streaming response from OpenAI')
+    }
+
+    const decoder = new TextDecoder('utf-8')
+    let buffer = ''
+    let conversationId = threadId || null
+    let streamErrored = false
+
+    try {
+      let done = false
+      while (!done) {
+        const { value, done: readerDone } = await reader.read()
+        if (readerDone) {
+          break
+        }
+
+        buffer += decoder.decode(value, { stream: true })
+        const events = buffer.split('\n\n')
+        buffer = events.pop() || ''
+
+        for (const event of events) {
+          const trimmed = event.trim()
+          if (!trimmed.startsWith('data:')) {
+            continue
+          }
+
+          const dataStr = trimmed.replace(/^data:\s*/, '')
+
+          if (!dataStr) {
+            continue
+          }
+
+          if (dataStr === '[DONE]') {
+            done = true
+            break
+          }
+
+          try {
+            const parsed = JSON.parse(dataStr)
+
+            switch (parsed.event) {
+              case 'response.output_text.delta': {
+                const delta = parsed.data?.delta || ''
+                if (delta) {
+                  sendEvent({ event: 'delta', textDelta: delta })
+                }
+                break
+              }
+              case 'response.completed': {
+                conversationId = parsed.data?.response?.conversation_id || conversationId
+                break
+              }
+              case 'response.refusal.delta': {
+                const refusalText = parsed.data?.delta || ''
+                if (refusalText) {
+                  sendEvent({ event: 'delta', textDelta: refusalText })
+                }
+                break
+              }
+              case 'response.error': {
+                const errMessage = parsed.data?.error?.message || 'Assistant returned an error.'
+                sendEvent({ event: 'error', error: errMessage })
+                done = true
+                break
+              }
+              case 'response.output_text.done':
+              case 'response.created':
+              case 'response.model.delta':
+              case 'response.model.done':
+              case 'ping':
+                // Ignore non-text events
+                break
+              default:
+                break
+            }
+          } catch (parseErr) {
+            console.warn('Failed to parse Assistants stream event:', parseErr)
           }
         }
       }
-      responseText = responseText.trim()
+    } catch (relayError) {
+      streamErrored = true
+      console.error('Stream relay error:', relayError)
+      sendEvent({ event: 'error', error: relayError?.message || 'Stream relay failed.' })
+    } finally {
+      if (!streamErrored) {
+        const metaPayload = {
+          event: 'meta',
+          threadId: conversationId || threadId || null,
+          filesUploaded: uploadedFileIds.length
+        }
+
+        if (allFileIds.length > 0) {
+          metaPayload.fileIds = allFileIds
+        }
+
+        sendEvent(metaPayload)
+      }
+
+      res.write('data: [DONE]\n\n')
+      res.end()
     }
 
-    if (!responseText) {
-      throw new Error('No response text received')
-    }
-
-    console.log('✓ Response received')
-    res.status(200).json({
-      message: responseText,
-      threadId: conversationId,
-      filesUploaded: uploadedFileIds.length,
-      ...(allFileIds.length ? { fileIds: allFileIds } : {})
-    })
+    return
 
   } catch (error) {
     console.error('ERROR:', error.message)

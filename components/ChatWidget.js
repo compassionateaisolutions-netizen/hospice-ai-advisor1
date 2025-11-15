@@ -66,17 +66,22 @@ export default function ChatWidget({ embedded = false }) {
   const [isUploading, setIsUploading] = useState(false)
   const [threadId, setThreadId] = useState(null) // Store thread ID for conversation continuity
   const [fileIds, setFileIds] = useState([])
+  const [isSending, setIsSending] = useState(false)
   const endRef = useRef(null)
+  const messageContainerRef = useRef(null)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
     if (!endRef.current) return
 
-    const chatContainer = endRef.current.closest('#chat-window')
+    const chatContainer = messageContainerRef.current
     if (!chatContainer) return
 
-    // Reset scroll to top so users see the start of the latest assistant reply
-    chatContainer.scrollTo({ top: 0, behavior: 'smooth' })
+    // Align the viewport with the newest message so the latest reply is front and center
+    const lastMessage = endRef.current.previousElementSibling
+    if (!lastMessage) return
+
+    chatContainer.scrollTo({ top: lastMessage.offsetTop, behavior: 'smooth' })
   }, [messages])
 
   const handleFileUpload = async (event) => {
@@ -84,7 +89,7 @@ export default function ChatWidget({ embedded = false }) {
     // Accept both PDFs and images
     const validFiles = files.filter(file => {
       const isValidType = file.type.includes('pdf') || file.type.includes('image')
-      const isValidSize = file.size <= 50 * 1024 * 1024 // 50MB limit for PDFs
+      const isValidSize = file.size <= 50 * 1024 * 1024 // 50MB absolute limit for PDFs
       return isValidType && isValidSize
     })
 
@@ -93,11 +98,25 @@ export default function ChatWidget({ embedded = false }) {
       return
     }
 
+    const oversized = validFiles.filter(file => file.size > 20 * 1024 * 1024)
+    if (oversized.length > 0) {
+      alert(`These files exceed the 20MB processing limit and were skipped: ${oversized.map(f => f.name).join(', ')}. Please compress, split, or export only key sections before uploading.`)
+    }
+
+    const usableFiles = validFiles.filter(file => file.size <= 20 * 1024 * 1024)
+
+    if (usableFiles.length === 0) {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      return
+    }
+
     setIsUploading(true)
     
     try {
       // Process each file - convert to base64
-      const filePromises = validFiles.map(async (file) => {
+      const filePromises = usableFiles.map(async (file) => {
         return new Promise((resolve) => {
           const reader = new FileReader()
           reader.onload = (e) => {
@@ -162,7 +181,30 @@ export default function ChatWidget({ embedded = false }) {
     setUploadedFiles(prev => prev.filter((_, index) => index !== fileIndex))
   }
 
+  const appendToBotMessage = (messageId, delta) => {
+    if (!delta) return
+    setMessages(prev => prev.map(msg => {
+      if (msg.id !== messageId) return msg
+      return {
+        ...msg,
+        text: (msg.text || '') + delta
+      }
+    }))
+  }
+
+  const finalizeBotMessage = (messageId, overrides = {}) => {
+    setMessages(prev => prev.map(msg => (
+      msg.id === messageId
+        ? { ...msg, ...overrides, streaming: false }
+        : msg
+    )))
+  }
+
   const send = async (messageText = null, fileData = null) => {
+    if (isSending) {
+      return
+    }
+
     const actualMessage = messageText || input
     
     // VALIDATION: Ensure we have something to send
@@ -179,7 +221,7 @@ export default function ChatWidget({ embedded = false }) {
     // Only add user message if it's a manual send (not automatic from file upload)
     if (!messageText) {
       const userMsg = { 
-        id: Date.now(), 
+        id: Date.now() + Math.random(), 
         from: 'user', 
         text: actualMessage || 'Analyzing uploaded files...',
         files: actualFiles
@@ -189,10 +231,20 @@ export default function ChatWidget({ embedded = false }) {
       setUploadedFiles([])
     }
 
+    const botMessageId = Date.now() + Math.random()
+    setMessages((m) => [...m, {
+      id: botMessageId,
+      from: 'bot',
+      text: '',
+      streaming: true
+    }])
+
     try {
       // Call the Assistants API endpoint
       const finalMessage = hasMessage ? String(actualMessage).trim() : 'Please analyze the uploaded file(s)'
-      
+
+      setIsSending(true)
+
       const response = await fetch('/api/chat-assistant', {
         method: 'POST',
         headers: {
@@ -206,53 +258,92 @@ export default function ChatWidget({ embedded = false }) {
         }),
       })
 
-      let data
-      try {
-        data = await response.json()
-      } catch (parseError) {
-        console.error('Failed to parse response:', parseError)
-        throw new Error(`Failed to parse API response: ${response.statusText}`)
-      }
-      
-      console.log('API Response:', { status: response.status, data })
-      
       if (!response.ok) {
-        // Extract error message from response
-        const errorMsg = data?.error || data?.message || `API Error: ${response.status}`
-        console.error('API Error Details:', errorMsg)
-        throw new Error(errorMsg)
-      }
-      
-      // Update thread ID for subsequent messages
-      if (data.threadId) {
-        setThreadId(data.threadId)
+        let errorMessage = 'Sorry, something went wrong. Please try again.'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData?.error || errorData?.message || errorMessage
+        } catch (parseErr) {
+          console.warn('Failed to parse error response:', parseErr)
+        }
+        throw new Error(errorMessage)
       }
 
-      if (Array.isArray(data.fileIds)) {
-        setFileIds(data.fileIds)
+      if (!response.body) {
+        throw new Error('Streaming is not supported in this browser.')
       }
-      
-      // Handle both message formats (nested or direct)
-      const messageText = typeof data.message === 'string' 
-        ? data.message 
-        : data.message?.value || data.message
-      
-      setMessages((m) => [...m, { 
-        id: Date.now() + 1, 
-        from: 'bot', 
-        text: messageText 
-      }])
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let buffer = ''
+      let doneReading = false
+      let latestThreadId = threadId
+      let latestFileIds = Array.isArray(fileIds) ? [...fileIds] : []
+
+      while (!doneReading) {
+        const { value, done } = await reader.read()
+        if (done) {
+          doneReading = true
+          break
+        }
+
+        buffer += decoder.decode(value, { stream: true })
+        const events = buffer.split('\n\n')
+        buffer = events.pop() || ''
+
+        for (const event of events) {
+          const trimmed = event.trim()
+          if (!trimmed.startsWith('data:')) {
+            continue
+          }
+
+          const dataStr = trimmed.replace(/^data:\s*/, '')
+
+          if (!dataStr) {
+            continue
+          }
+
+          if (dataStr === '[DONE]') {
+            doneReading = true
+            break
+          }
+
+          try {
+            const parsed = JSON.parse(dataStr)
+
+            if (parsed.event === 'delta') {
+              appendToBotMessage(botMessageId, parsed.textDelta || '')
+            } else if (parsed.event === 'meta') {
+              if (parsed.threadId) {
+                latestThreadId = parsed.threadId
+              }
+              if (Array.isArray(parsed.fileIds)) {
+                latestFileIds = parsed.fileIds
+              }
+            } else if (parsed.event === 'error') {
+              throw new Error(parsed.error || 'Streaming error encountered.')
+            }
+          } catch (streamErr) {
+            console.warn('Failed to parse stream event:', streamErr)
+          }
+        }
+      }
+
+      if (latestThreadId) {
+        setThreadId(latestThreadId)
+      }
+
+      if (Array.isArray(latestFileIds) && latestFileIds.length > 0) {
+        setFileIds(Array.from(new Set(latestFileIds)))
+      }
+
+      finalizeBotMessage(botMessageId)
     } catch (error) {
       console.error('Chat error details:', error)
-      
-      let errorMessage = error?.message || 'Sorry, I encountered an error. Please try again.'
-      console.error('Final error message shown to user:', errorMessage)
-      
-      setMessages((m) => [...m, { 
-        id: Date.now() + 1, 
-        from: 'bot', 
-        text: errorMessage
-      }])
+      const errorMessage = error?.message || 'Sorry, I encountered an error. Please try again.'
+      finalizeBotMessage(botMessageId, { text: errorMessage })
+    } finally {
+      setIsSending(false)
     }
   }
 
@@ -282,7 +373,7 @@ export default function ChatWidget({ embedded = false }) {
             </div>
           )}
 
-          <div className={`p-4 overflow-y-auto ${embedded ? 'h-96' : 'h-64'}`} id="chat-window">
+          <div ref={messageContainerRef} className={`p-4 overflow-y-auto ${embedded ? 'h-96' : 'h-64'}`} id="chat-window">
             {messages.map((m) => (
               <div key={m.id} className={`mb-3 flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`${m.from === 'user' 
@@ -358,7 +449,7 @@ export default function ChatWidget({ embedded = false }) {
               {/* File Upload Button */}
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
+                disabled={isUploading || isSending}
                 className="bg-gray-500 text-white px-3 py-3 rounded-lg hover:bg-gray-600 font-medium disabled:opacity-50 flex items-center justify-center"
                 title="Upload PDF or Image"
               >
@@ -373,10 +464,10 @@ export default function ChatWidget({ embedded = false }) {
 
               <button 
                 onClick={send} 
-                disabled={isUploading}
+                disabled={isUploading || isSending}
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50"
               >
-                Send
+                {isSending ? 'Sending...' : 'Send'}
               </button>
             </div>
 
