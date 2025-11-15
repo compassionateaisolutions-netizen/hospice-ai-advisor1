@@ -363,6 +363,7 @@ export default function ChatWidget({ embedded = false }) {
         setFileIds(Array.from(new Set(latestFileIds)))
       }
 
+      console.log('Final assistant text:', accumulatedText)
       const finalText = accumulatedText.trim().length > 0
         ? accumulatedText
         : 'Sorry, I did not receive a response. Please try again.'

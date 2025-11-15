@@ -346,12 +346,17 @@ Keep the tone clinical yet compassionate. Avoid hedging language unless the evid
 
           try {
             const parsed = JSON.parse(dataStr)
+            console.log('Assistants stream event:', parsed)
 
             switch (parsed.event) {
               case 'response.output_text.delta': {
-                const delta = parsed.data?.delta || ''
-                if (delta) {
-                  sendEvent({ event: 'delta', textDelta: delta })
+                const deltaPayload = parsed.data?.delta
+                const deltaText = typeof deltaPayload === 'string'
+                  ? deltaPayload
+                  : deltaPayload?.text || ''
+
+                if (deltaText) {
+                  sendEvent({ event: 'delta', textDelta: deltaText })
                 }
                 break
               }
