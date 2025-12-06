@@ -1,7 +1,4 @@
 import { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 
 function ChatBubble({ onClick }) {
   return (
@@ -13,49 +10,6 @@ function ChatBubble({ onClick }) {
   )
 }
 
-const markdownComponents = {
-  h2: ({ children }) => (
-    <h2 className="text-lg font-semibold text-gray-900 mt-4 mb-2 flex items-center gap-2">
-      {children}
-    </h2>
-  ),
-  h3: ({ children }) => (
-    <h3 className="text-base font-semibold text-gray-900 mt-3 mb-2">
-      {children}
-    </h3>
-  ),
-  p: ({ children }) => (
-    <p className="text-gray-800 leading-relaxed mb-3 last:mb-0">
-      {children}
-    </p>
-  ),
-  ul: ({ children }) => (
-    <ul className="list-disc pl-5 space-y-2 text-gray-800">
-      {children}
-    </ul>
-  ),
-  ol: ({ children }) => (
-    <ol className="list-decimal pl-5 space-y-2 text-gray-800">
-      {children}
-    </ol>
-  ),
-  li: ({ children }) => (
-    <li className="pl-1 leading-relaxed">{children}</li>
-  ),
-  strong: ({ children }) => (
-    <strong className="font-semibold text-gray-900">
-      {children}
-    </strong>
-  ),
-  em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
-  hr: () => <hr className="my-4 border-t border-gray-200" />,
-  blockquote: ({ children }) => (
-    <blockquote className="border-l-4 border-indigo-200 pl-3 text-gray-700 italic">
-      {children}
-    </blockquote>
-  )
-}
-
 export default function ChatWidget({ embedded = false }) {
   const [open, setOpen] = useState(embedded) // Start open if embedded
   const [messages, setMessages] = useState([
@@ -64,113 +18,76 @@ export default function ChatWidget({ embedded = false }) {
   const [input, setInput] = useState('')
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [isUploading, setIsUploading] = useState(false)
-  const [threadId, setThreadId] = useState(null) // Store thread ID for conversation continuity
-  const [fileIds, setFileIds] = useState([])
   const [isSending, setIsSending] = useState(false)
   const endRef = useRef(null)
-  const messageContainerRef = useRef(null)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
-    if (!endRef.current) return
-
-    const chatContainer = messageContainerRef.current
-    if (!chatContainer) return
-
-    // Align the viewport with the newest message so the latest reply is front and center
-    const lastMessage = endRef.current.previousElementSibling
-    if (!lastMessage) return
-
-    chatContainer.scrollTo({ top: lastMessage.offsetTop, behavior: 'smooth' })
+    // Only scroll within the chat container, not the whole page
+    if (endRef.current) {
+      const chatContainer = endRef.current.closest('#chat-window')
+      if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight
+      }
+    }
   }, [messages])
 
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files)
-    // Accept both PDFs and images
     const validFiles = files.filter(file => {
       const isValidType = file.type.includes('pdf') || file.type.includes('image')
-      const isValidSize = file.size <= 50 * 1024 * 1024 // 50MB absolute limit for PDFs
+      const isValidSize = file.size <= 10 * 1024 * 1024 // 10MB limit
       return isValidType && isValidSize
     })
 
     if (validFiles.length === 0) {
-      alert('Please upload valid PDF or image files (under 50MB)')
-      return
-    }
-
-    const oversized = validFiles.filter(file => file.size > 20 * 1024 * 1024)
-    if (oversized.length > 0) {
-      alert(`These files exceed the 20MB processing limit and were skipped: ${oversized.map(f => f.name).join(', ')}. Please compress, split, or export only key sections before uploading.`)
-    }
-
-    const usableFiles = validFiles.filter(file => file.size <= 20 * 1024 * 1024)
-
-    if (usableFiles.length === 0) {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
+      alert('Please upload valid PDF or image files under 10MB')
       return
     }
 
     setIsUploading(true)
     
     try {
-      // Process each file - convert to base64
-      const filePromises = usableFiles.map(async (file) => {
-        return new Promise((resolve) => {
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            resolve({
-              name: file.name,
-              type: file.type,
-              size: file.size,
-              content: e.target.result, // base64 data URL
-              isImage: file.type.includes('image'),
-              isPDF: file.type.includes('pdf')
-            })
-          }
-          reader.readAsDataURL(file)
+      // Process each file
+      const filePromises = validFiles.map(async (file) => {
+        const formData = new FormData()
+        formData.append('file', file)
+        
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
         })
+        
+        if (!response.ok) throw new Error('Upload failed')
+        
+        const result = await response.json()
+        return {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          url: result.url,
+          content: result.content
+        }
       })
 
       const uploadedFileData = await Promise.all(filePromises)
       setUploadedFiles(prev => [...prev, ...uploadedFileData])
       
-      // Create analysis message
-      const fileList = uploadedFileData.map(f => f.name).join(', ')
-      const pdfFiles = uploadedFileData.filter(f => f.isPDF)
-      const imageFiles = uploadedFileData.filter(f => f.isImage)
-      
-      let fileAnalysisMessage = `I have uploaded ${uploadedFileData.length} file(s) for analysis: ${fileList}. `
-      
-      if (pdfFiles.length > 0) {
-        fileAnalysisMessage += `PDF files: ${pdfFiles.map(f => f.name).join(', ')}. `
-      }
-      if (imageFiles.length > 0) {
-        fileAnalysisMessage += `Images: ${imageFiles.map(f => f.name).join(', ')}. `
-      }
-      
-      fileAnalysisMessage += `Please provide a comprehensive hospice eligibility assessment based on this patient information, including specific clinical indicators, documentation quality, and CMS compliance evaluation.`
-      
-      // Add user message
+      // Add file upload message
       const fileMessage = {
         id: Date.now(),
         from: 'user',
-        text: fileAnalysisMessage,
+        text: `📎 Uploaded ${uploadedFileData.length} file(s): ${uploadedFileData.map(f => f.name).join(', ')}`,
         files: uploadedFileData
       }
       
       setMessages(prev => [...prev, fileMessage])
-      
-      // Send for analysis with all file content
-      await send(fileAnalysisMessage, uploadedFileData)
       
     } catch (error) {
       console.error('Upload error:', error)
       alert('Failed to upload files. Please try again.')
     } finally {
       setIsUploading(false)
-      setUploadedFiles([])
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -181,198 +98,92 @@ export default function ChatWidget({ embedded = false }) {
     setUploadedFiles(prev => prev.filter((_, index) => index !== fileIndex))
   }
 
-  const appendToBotMessage = (messageId, delta) => {
-    if (!delta) return
-    setMessages(prev => prev.map(msg => {
-      if (msg.id !== messageId) return msg
-      return {
-        ...msg,
-        text: (msg.text || '') + delta
-      }
-    }))
-  }
+  const send = async () => {
+    if (isSending) return
+    if (!input.trim() && uploadedFiles.length === 0) return
+    
+    const hasAttachments = uploadedFiles.length > 0
+    const attachedFiles = hasAttachments ? [...uploadedFiles] : undefined
+    const trimmedInput = input.trim()
+  const defaultFilePrompt = 'Review the uploaded document(s) and determine whether the patient meets hospice eligibility criteria. Begin your response with either "Yes, the patient meets hospice eligibility criteria." or "No, the patient does not meet hospice eligibility criteria." Then summarize key clinical indicators, documentation strengths or gaps, and any compliance risks.'
+    const promptForAssistant = trimmedInput.length > 0
+      ? trimmedInput
+      : hasAttachments
+        ? defaultFilePrompt
+        : ''
 
-  const finalizeBotMessage = (messageId, overrides = {}) => {
-    setMessages(prev => prev.map(msg => (
-      msg.id === messageId
-        ? { ...msg, ...overrides, streaming: false }
-        : msg
-    )))
-  }
-
-  const send = async (messageText = null, fileData = null) => {
-    if (isSending) {
-      return
-    }
-
-    const actualMessage = messageText || input
-    
-    // VALIDATION: Ensure we have something to send
-    const hasMessage = actualMessage && String(actualMessage).trim().length > 0
-    const potentialFiles = fileData || (uploadedFiles.length > 0 ? [...uploadedFiles] : undefined)
-    const hasFiles = Array.isArray(potentialFiles) && potentialFiles.length > 0
-    
-    if (!hasMessage && !hasFiles) {
-      return // Don't send empty messages without files
-    }
-    
-    const actualFiles = potentialFiles
-    
-    // Only add user message if it's a manual send (not automatic from file upload)
-    if (!messageText) {
-      const userMsg = { 
-        id: Date.now() + Math.random(), 
-        from: 'user', 
-        text: actualMessage || 'Analyzing uploaded files...',
-        files: actualFiles
-      }
-      setMessages((m) => [...m, userMsg])
-      setInput('')
-      setUploadedFiles([])
+    const userMsg = { 
+      id: Date.now(), 
+      from: 'user', 
+      text: trimmedInput.length > 0 ? trimmedInput : hasAttachments ? 'Analyzing uploaded files for hospice eligibility...' : '',
+      files: attachedFiles
     }
 
     const botMessageId = Date.now() + Math.random()
-    setMessages((m) => [...m, {
+    const placeholderBotMessage = {
       id: botMessageId,
       from: 'bot',
       text: '',
       streaming: true
-    }])
+    }
+    
+    setMessages((m) => [...m, userMsg, placeholderBotMessage])
+    setInput('')
+    setUploadedFiles([])
+    setIsSending(true)
 
     try {
-      // Call the Assistants API endpoint
-      const finalMessage = hasMessage ? String(actualMessage).trim() : 'Please analyze the uploaded file(s)'
-
-      setIsSending(true)
-
-      const response = await fetch('/api/chat-assistant', {
+      // Call the API endpoint with both text and files
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          message: finalMessage,
-          files: actualFiles,
-          threadId: threadId, // Pass current thread for conversation continuity
-          fileIds: fileIds.length > 0 ? fileIds : undefined
+          message: promptForAssistant,
+          files: attachedFiles 
         }),
       })
 
       if (!response.ok) {
-        let errorMessage = 'Sorry, something went wrong. Please try again.'
-        try {
-          const errorData = await response.json()
-          errorMessage = errorData?.error || errorData?.message || errorMessage
-        } catch (parseErr) {
-          console.warn('Failed to parse error response:', parseErr)
-        }
-        throw new Error(errorMessage)
+        const errorText = await response.text().catch(() => '')
+        throw new Error(errorText || 'Failed to get response')
       }
 
-      const contentType = response.headers.get('content-type') || ''
-      const isStream = contentType.includes('text/event-stream') && typeof response.body?.getReader === 'function'
-
-      if (!isStream) {
-        const data = await response.json()
-
-        if (data.threadId) {
-          setThreadId(data.threadId)
-        }
-        if (Array.isArray(data.fileIds)) {
-          setFileIds(data.fileIds)
-        }
-
-        const messageText = typeof data.message === 'string'
-          ? data.message
-          : data.message?.value || data.message
-
-        const fallbackText = messageText && String(messageText).trim().length > 0
-          ? messageText
-          : 'Sorry, I did not receive a response. Please try again.'
-
-        finalizeBotMessage(botMessageId, { text: fallbackText })
-        return
-      }
-
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder('utf-8')
-      let buffer = ''
-      let doneReading = false
-      let latestThreadId = threadId
-      let latestFileIds = Array.isArray(fileIds) ? [...fileIds] : []
-      let accumulatedText = ''
-
-      while (!doneReading) {
-        const { value, done } = await reader.read()
-        if (done) {
-          doneReading = true
-          break
-        }
-
-        buffer += decoder.decode(value, { stream: true })
-        const events = buffer.split('\n\n')
-        buffer = events.pop() || ''
-
-        for (const event of events) {
-          const trimmed = event.trim()
-          if (!trimmed.startsWith('data:')) {
-            continue
-          }
-
-          const dataStr = trimmed.replace(/^data:\s*/, '')
-
-          if (!dataStr) {
-            continue
-          }
-
-          if (dataStr === '[DONE]') {
-            doneReading = true
-            break
-          }
-
-          try {
-            const parsed = JSON.parse(dataStr)
-
-            if (parsed.event === 'delta') {
-              const delta = parsed.textDelta || ''
-              if (delta) {
-                accumulatedText += delta
-                appendToBotMessage(botMessageId, delta)
-              }
-            } else if (parsed.event === 'meta') {
-              if (parsed.threadId) {
-                latestThreadId = parsed.threadId
-              }
-              if (Array.isArray(parsed.fileIds)) {
-                latestFileIds = parsed.fileIds
-              }
-            } else if (parsed.event === 'error') {
-              throw new Error(parsed.error || 'Streaming error encountered.')
-            }
-          } catch (streamErr) {
-            console.warn('Failed to parse stream event:', streamErr)
-          }
-        }
-      }
-
-      if (latestThreadId) {
-        setThreadId(latestThreadId)
-      }
-
-      if (Array.isArray(latestFileIds) && latestFileIds.length > 0) {
-        setFileIds(Array.from(new Set(latestFileIds)))
-      }
-
-      console.log('Final assistant text:', accumulatedText)
-      const finalText = accumulatedText.trim().length > 0
-        ? accumulatedText
-        : 'Sorry, I did not receive a response. Please try again.'
-
-      finalizeBotMessage(botMessageId, { text: finalText })
+      const data = await response.json()
+      setMessages((m) => m.map((msg) => (
+        msg.id === botMessageId
+          ? { ...msg, streaming: false, text: data?.message || 'I could not generate a response. Please try again.' }
+          : msg
+      )))
     } catch (error) {
-      console.error('Chat error details:', error)
-      const errorMessage = error?.message || 'Sorry, I encountered an error. Please try again.'
-      finalizeBotMessage(botMessageId, { text: errorMessage })
+      console.error('Chat error:', error)
+      let errorText = 'Sorry, I encountered an error. Please try again. If this continues, double-check your network connection and API key.'
+
+      if (error?.message) {
+        try {
+          const parsed = JSON.parse(error.message)
+          if (parsed && typeof parsed.message === 'string' && parsed.message.trim().length > 0) {
+            errorText = parsed.message.trim()
+          }
+        } catch (_jsonErr) {
+          if (error.message.toLowerCase().includes('timed out')) {
+            errorText = 'The request to OpenAI timed out. Please try again in a few moments.'
+          } else if (error.message.toLowerCase().includes('network')) {
+            errorText = 'Network error while reaching the AI service. Please check your connection and try again.'
+          }
+        }
+      }
+
+      setMessages((m) => m.map((msg) => (
+        msg.id === botMessageId
+          ? {
+              ...msg,
+              streaming: false,
+              text: errorText
+            }
+          : msg
+      )))
     } finally {
       setIsSending(false)
     }
@@ -390,9 +201,7 @@ export default function ChatWidget({ embedded = false }) {
           {!embedded && (
             <div className="flex items-center justify-between px-4 py-3 bg-indigo-600 text-white rounded-t-lg">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-white/20 rounded overflow-hidden flex items-center justify-center">
-                  <Image src="/logo.svg" alt="Compassionate Care logo" width={32} height={32} className="object-contain" />
-                </div>
+                <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center font-semibold">CA</div>
                 <div>
                   <div className="font-semibold">Hospice AI Advisor</div>
                   <div className="text-xs opacity-80">Ask me about fraud reduction & eligibility</div>
@@ -404,24 +213,17 @@ export default function ChatWidget({ embedded = false }) {
             </div>
           )}
 
-          <div ref={messageContainerRef} className={`p-4 overflow-y-auto ${embedded ? 'h-96' : 'h-64'}`} id="chat-window">
+          <div className={`p-4 overflow-y-auto ${embedded ? 'h-96' : 'h-64'}`} id="chat-window">
             {messages.map((m) => (
               <div key={m.id} className={`mb-3 flex ${m.from === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`${m.from === 'user' 
-                  ? 'bg-indigo-600 text-white shadow-md' 
-                  : 'bg-white text-gray-900 border border-gray-200 shadow-sm'} max-w-[85%] p-4 rounded-xl leading-relaxed`}> 
+                <div className={`${m.from === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-900'} max-w-[80%] p-3 rounded-lg`}>
                   {m.streaming && (!m.text || m.text.trim().length === 0) ? (
                     <div className="flex items-center gap-3 text-sm text-gray-500">
-                      <div className="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
+                      <div className="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full" />
                       <span>Thinking…</span>
                     </div>
                   ) : (
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      components={m.from === 'user' ? undefined : markdownComponents}
-                    >
-                      {m.text}
-                    </ReactMarkdown>
+                    <div>{m.text}</div>
                   )}
                   {m.files && m.files.length > 0 && (
                     <div className="mt-2 space-y-1">
@@ -505,7 +307,7 @@ export default function ChatWidget({ embedded = false }) {
                 disabled={isUploading || isSending}
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50"
               >
-                {isSending ? 'Sending...' : 'Send'}
+                {isSending ? 'Sending…' : 'Send'}
               </button>
             </div>
 
