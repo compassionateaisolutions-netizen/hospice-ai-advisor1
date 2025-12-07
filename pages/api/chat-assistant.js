@@ -276,7 +276,34 @@ Keep the tone clinical yet compassionate. Avoid hedging language unless the evid
 
     if (!responseRes.ok) {
       const errText = await responseRes.text()
-      throw new Error(`Responses API failed: ${responseRes.status} - ${errText}`)
+      let parsedError = null
+      try {
+        parsedError = JSON.parse(errText)
+      } catch (_parseErr) {
+        parsedError = null
+      }
+
+      const apiMessage = typeof parsedError?.error?.message === 'string'
+        ? parsedError.error.message
+        : typeof parsedError?.message === 'string'
+          ? parsedError.message
+          : errText
+
+      const lowerMessage = apiMessage ? apiMessage.toLowerCase() : ''
+      const quotaHit = responseRes.status === 429
+        || lowerMessage.includes('quota')
+        || lowerMessage.includes('billing')
+        || lowerMessage.includes('limit')
+        || lowerMessage.includes('credit')
+
+      if (quotaHit) {
+        return res.status(429).json({
+          error: 'credit_limit_reached',
+          message: "You've reached your daily credit limit; please contact the Compassionate Care Advisor team to upgrade to a Premium account."
+        })
+      }
+
+      throw new Error(`Responses API failed: ${responseRes.status} - ${apiMessage}`)
     }
 
     const responseData = await responseRes.json()
