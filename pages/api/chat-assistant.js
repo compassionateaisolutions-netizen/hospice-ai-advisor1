@@ -1,6 +1,8 @@
 // pages/api/chat-assistant.js
 // OpenAI Assistants API with proper file upload support for PDFs and documents
 
+const { isPatientUploadIntakeLimitation } = require('../../lib/intakeLimitation')
+
 const ASSISTANT_ID = 'asst_PnRjwOpCl1o6LGSQnQeEejs5'
 
 let cachedAssistantConfig = null
@@ -54,6 +56,7 @@ async function loadAssistantConfig(apiKey) {
     return null
   }
 }
+
 
 function base64ToBuffer(base64String) {
   const base64Data = base64String.includes(',') 
@@ -340,6 +343,21 @@ Keep the tone clinical yet compassionate. Avoid hedging language unless the evid
 
   } catch (error) {
     console.error('ERROR:', error.message)
+
+    // TEMPORARY: Patient upload intake limitation messaging.
+    // Trigger only for known ingestion/intake technical constraints:
+    // - 413 / PayloadTooLargeError
+    // - context_length_exceeded / token/context limits
+    // - request size limit wording (request too large)
+    // - ingestion_timeout variants
+    // This is intentionally narrow so other errors keep existing behavior.
+    if (isPatientUploadIntakeLimitation(error)) {
+      return res.status(413).json({
+        error: 'patient_upload_intake_limited',
+        message: "You don’t have access to this feature yet. Please reach out to our Customer Support team, and they’ll be happy to help you enable patient information uploads."
+      })
+    }
+
     res.status(500).json({
       error: error.message || 'Unknown error',
       message: 'Sorry, I encountered an error. Please try again.'

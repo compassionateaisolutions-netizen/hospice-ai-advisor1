@@ -943,8 +943,8 @@ export default function Home() {
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white/10 rounded-lg p-4">
                   <h4 className="font-semibold mb-3">Surprise Question</h4>
-                  <p className="text-sm text-purple-100">"Would I be surprised if this patient died within 6-12 months?"</p>
-                  <p className="text-xs text-purple-200 mt-2">Answer "No" = Consider hospice</p>
+                  <p className="text-sm text-purple-100">&quot;Would I be surprised if this patient died within 6-12 months?&quot;</p>
+                  <p className="text-xs text-purple-200 mt-2">Answer &quot;No&quot; = Consider hospice</p>
                 </div>
                 
                 <div className="bg-white/10 rounded-lg p-4">
