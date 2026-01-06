@@ -91,6 +91,16 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key not configured' })
     }
 
+    // TEMPORARY (local/dev support): allow forcing the upload intake limitation response.
+    // This exists so the UI message can be verified while the real ingestion pipeline is
+    // being fixed. Do not enable in production.
+    if (process.env.FORCE_UPLOAD_LIMIT === '1') {
+      return res.status(413).json({
+        error: 'patient_upload_intake_limited',
+        message: "You don’t have access to this feature yet. Please reach out to our Customer Support team, and they’ll be happy to help you enable patient information uploads."
+      })
+    }
+
   // Upload files if present (PDFs, images, etc.)
   const uploadedFileIds = []
 
@@ -136,7 +146,13 @@ export default async function handler(req, res) {
           if (!uploadRes.ok) {
             const errText = await uploadRes.text()
             console.warn(`Upload failed for ${file.name}: ${uploadRes.status} - ${errText}`)
-            continue
+
+            // Temporary workaround: if the upload/ingestion fails due to known technical constraints
+            // (request too large, context/token limits, ingestion timeout), bubble up so the handler
+            // can show the gated message instead of the generic fallback.
+            const uploadErr = new Error(`Upload failed: ${uploadRes.status} - ${errText}`)
+            uploadErr.status = uploadRes.status
+            throw uploadErr
           }
 
           const uploadedFile = await uploadRes.json()
