@@ -70,6 +70,7 @@ export default function ChatWidget({ embedded = false }) {
   const endRef = useRef(null)
   const messageContainerRef = useRef(null)
   const fileInputRef = useRef(null)
+  const inputRef = useRef(null)
 
   useEffect(() => {
     if (!endRef.current) return
@@ -205,7 +206,11 @@ export default function ChatWidget({ embedded = false }) {
       return
     }
 
-  const actualMessage = messageText || input
+  // IMPORTANT: Read direct from the input element when available so clicking the Send button
+  // always uses the latest typed value (avoids any rare stale-state timing issues).
+  const latestInputValue = typeof inputRef.current?.value === 'string' ? inputRef.current.value : input
+
+  const actualMessage = (messageText ?? latestInputValue)
     
     // VALIDATION: Ensure we have something to send
     const hasMessage = actualMessage && String(actualMessage).trim().length > 0
@@ -246,6 +251,10 @@ export default function ChatWidget({ embedded = false }) {
       }
       setMessages((m) => [...m, userMsg])
       setInput('')
+
+      if (inputRef.current) {
+        inputRef.current.value = ''
+      }
       setUploadedFiles([])
     }
 
@@ -486,6 +495,7 @@ export default function ChatWidget({ embedded = false }) {
             {/* Input Area */}
             <div className="flex gap-2">
               <input 
+                ref={inputRef}
                 value={input} 
                 onChange={(e) => setInput(e.target.value)} 
                 onKeyDown={(e) => { 
@@ -520,7 +530,7 @@ export default function ChatWidget({ embedded = false }) {
 
               <button 
                 onClick={send} 
-                disabled={isUploading || isSending}
+                disabled={isUploading || isSending || (!input || input.trim().length === 0)}
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50"
               >
                 {isSending ? 'Sending...' : 'Send'}
