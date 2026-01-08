@@ -91,6 +91,19 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key not configured' })
     }
 
+    // TEMPORARY (production gating): patient information uploads are not enabled yet.
+    // For the live site only, if the user attempts to upload a file, return the exact
+    // support message instead of a generic error.
+    // Local/dev behavior stays unchanged so you can keep testing locally.
+    const isProd = process.env.NODE_ENV === 'production'
+    const hasUploadAttempt = Array.isArray(files) && files.length > 0
+    if (isProd && hasUploadAttempt) {
+      return res.status(403).json({
+        error: 'patient_upload_not_enabled',
+        message: "You don’t have access to this feature yet. Please reach out to our Customer Support team, and they’ll be happy to help you enable patient information uploads."
+      })
+    }
+
     // TEMPORARY (local/dev support): allow forcing the upload intake limitation response.
     // This exists so the UI message can be verified while the real ingestion pipeline is
     // being fixed. Do not enable in production.
