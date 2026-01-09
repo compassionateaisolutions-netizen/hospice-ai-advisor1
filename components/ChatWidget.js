@@ -289,7 +289,8 @@ export default function ChatWidget({ embedded = false }) {
         let errorMessage = 'Sorry, something went wrong. Please try again.'
         try {
           const errorData = await response.json()
-          errorMessage = errorData?.error || errorData?.message || errorMessage
+          // Prefer human-friendly API `message` first; `error` is often a machine code.
+          errorMessage = errorData?.message || errorData?.error || errorMessage
         } catch (parseErr) {
           console.warn('Failed to parse error response:', parseErr)
         }
