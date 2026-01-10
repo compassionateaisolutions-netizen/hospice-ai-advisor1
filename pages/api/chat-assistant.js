@@ -95,7 +95,10 @@ export default async function handler(req, res) {
     // For the live site only, if the user attempts to upload a file, return the exact
     // support message instead of a generic error.
     // Local/dev behavior stays unchanged so you can keep testing locally.
-    const isProd = process.env.NODE_ENV === 'production'
+    // Vercel sets VERCEL_ENV to "production" for production deployments.
+    // NODE_ENV might not always be set the way you expect in Serverless runtimes,
+    // so we check both to make production gating reliable.
+    const isProd = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production'
     const hasUploadAttempt = Array.isArray(files) && files.length > 0
     if (isProd && hasUploadAttempt) {
       return res.status(403).json({
