@@ -65,10 +65,53 @@ function base64ToBuffer(base64String) {
   return Buffer.from(base64Data, 'base64')
 }
 
+async function readJsonBody(req, { maxBytes }) {
+  return new Promise((resolve, reject) => {
+    let total = 0
+    let body = ''
+
+    req.on('data', (chunk) => {
+      total += chunk.length
+      if (total > maxBytes) {
+        const err = new Error('request_entity_too_large')
+        err.statusCode = 413
+        err.code = 'REQUEST_ENTITY_TOO_LARGE'
+        // Stop reading further data.
+        try {
+          req.destroy(err)
+        } catch (_e) {
+          // ignore
+        }
+        return
+      }
+      body += chunk.toString('utf8')
+    })
+
+    req.on('end', () => {
+      if (!body) return resolve({})
+      try {
+        resolve(JSON.parse(body))
+      } catch (e) {
+        const err = new Error('invalid_json')
+        err.statusCode = 400
+        err.cause = e
+        reject(err)
+      }
+    })
+
+    req.on('error', (err) => reject(err))
+  })
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  // If the request exceeds Next.js bodyParser sizeLimit, Next will normally return
+  // a plain-text 413 error before this handler runs. That breaks the UI because
+  // it expects JSON. Disabling the built-in parser lets us always respond with a
+  // structured JSON message (including the upload gating/support text).
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
@@ -78,7 +121,30 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { message, files, threadId, fileIds: existingFileIdsRaw } = req.body
+  // Parse JSON body ourselves (bodyParser disabled in config) so we can:
+  // 1) return JSON for 413 errors
+  // 2) control a safer max request size
+  let body
+  try {
+    const defaultMax = 2_500_000 // bytes (~2.5MB) to avoid sending huge base64 payloads
+    const maxBytes = Number.parseInt(process.env.MAX_UPLOAD_BYTES || '', 10)
+    body = await readJsonBody(req, { maxBytes: Number.isFinite(maxBytes) ? maxBytes : defaultMax })
+  } catch (err) {
+    const isTooLarge = err?.statusCode === 413 || err?.code === 'REQUEST_ENTITY_TOO_LARGE'
+    if (isTooLarge) {
+      return res.status(413).json({
+        error: 'patient_upload_intake_limited',
+        message: "You don’t have access to this feature yet. Please reach out to our Customer Support team, and they’ll be happy to help you enable patient information uploads."
+      })
+    }
+
+    return res.status(err?.statusCode || 400).json({
+      error: 'invalid_request',
+      message: 'Invalid request body.'
+    })
+  }
+
+  const { message, files, threadId, fileIds: existingFileIdsRaw } = body || {}
 
   if (!message || typeof message !== 'string' || !message.trim()) {
     return res.status(400).json({ error: 'Message is required and must be a non-empty string' })
@@ -399,8 +465,6 @@ Keep the tone clinical yet compassionate. Avoid hedging language unless the evid
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '100mb'
-    }
+    bodyParser: false
   }
 }
