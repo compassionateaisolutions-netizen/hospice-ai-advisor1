@@ -558,7 +558,7 @@ export default function ChatWidget({ embedded = false }) {
               </button>
 
               <button 
-                onClick={send} 
+                onClick={() => send()} 
                 disabled={isUploading || isSending || (!input || input.trim().length === 0)}
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-50"
               >
