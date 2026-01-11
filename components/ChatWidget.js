@@ -87,6 +87,34 @@ export default function ChatWidget({ embedded = false }) {
 
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files)
+
+    // Production-only gating on the public marketing domain.
+    // Vercel may reject large base64 payloads with a plain-text 413 before our API
+    // handler runs. To guarantee the user sees the correct message, we short-circuit
+    // uploads on the live site and show the exact support text.
+    const isLiveMarketingSite =
+      typeof window !== 'undefined' &&
+      window.location?.hostname === 'www.compassionateaicaresolutions.com'
+
+    if (isLiveMarketingSite && files.length > 0) {
+      const supportMessage = "You don’t have access to this feature yet. Please reach out to our Customer Support team, and they’ll be happy to help you enable patient information uploads."
+
+      setMessages(prev => ([
+        ...prev,
+        {
+          id: Date.now() + Math.random(),
+          from: 'bot',
+          text: supportMessage
+        }
+      ]))
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+
+      return
+    }
+
     // Accept both PDFs and images
     const validFiles = files.filter(file => {
       const isValidType = file.type.includes('pdf') || file.type.includes('image')
