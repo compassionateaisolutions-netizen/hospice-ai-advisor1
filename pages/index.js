@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import Image from 'next/image'
+import Link from 'next/link'
 import ChatWidget from '../components/ChatWidget'
 
 export default function Home() {
@@ -1229,6 +1230,29 @@ export default function Home() {
           </div>
         </section>
       </main>
+
+      <footer className="border-t bg-white">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="text-sm text-gray-600">
+              © {new Date().getFullYear()} Compassionate Care Advisor. All rights reserved.
+            </div>
+
+            <div className="flex items-center gap-6 text-sm">
+              <Link href="/terms" className="text-gray-700 hover:text-indigo-600 transition-colors">
+                Terms of Use
+              </Link>
+              <Link href="/privacy" className="text-gray-700 hover:text-indigo-600 transition-colors">
+                Privacy Policy
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-4 text-xs text-gray-500 max-w-3xl">
+            This site is for informational purposes only and does not provide medical, legal, or billing advice.
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
