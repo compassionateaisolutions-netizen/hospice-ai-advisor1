@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "next build && next export",
-    "test": "jest"
+    "test": "jest",
+    "export": "next build && next export"
   },
   "keywords": [
     "hospice",
@@ -35,8 +35,8 @@
     "autoprefixer": "10.4.14",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.1.0",
+    "jest": "^29.7.0",
     "postcss": "8.4.24",
-    "tailwindcss": "3.4.8",
-    "jest": "^29.7.0"
+    "tailwindcss": "3.4.8"
   }
 }

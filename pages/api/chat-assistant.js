@@ -319,18 +319,18 @@ export default async function handler(req, res) {
       }
     }
 
-    const privacyStatement = 'At Compassionate Care Advisor, protecting patient privacy is our highest priority. The system does not store, retain, or share any patient information. All data provided during an assessment is used solely for determining hospice eligibility based on established clinical criteria and decision trees.\n\nTo maintain confidentiality and comply with HIPAA standards, please ensure that any information entered is de-identified — meaning it should not include names, dates of birth, addresses, or any other personally identifiable information.\n\nThe Compassionate Care Advisor processes only the minimum information necessary to evaluate hospice criteria and immediately discards all data after the assessment is complete.'
+  const privacyStatement = 'At Hospice Audit Agent, protecting patient privacy is our highest priority. The system does not store, retain, or share any patient information. All data provided during an assessment is used solely for determining hospice eligibility based on established clinical criteria and decision trees.\n\nTo maintain confidentiality and comply with HIPAA standards, please ensure that any information entered is de-identified — meaning it should not include names, dates of birth, addresses, or any other personally identifiable information.\n\nThe Hospice Audit Agent processes only the minimum information necessary to evaluate hospice criteria and immediately discards all data after the assessment is complete.'
 
   const instructionsFromAssistant = assistantConfig?.instructions ? `${assistantConfig.instructions}\n\n` : ''
 
-  const hospiceGuidance = `Always act as the Compassionate Care Advisor. When a user uploads clinical PDFs or images, you must:
+  const hospiceGuidance = `Always act as the Hospice Audit Agent. When a user uploads clinical PDFs or images, you must:
 
 1. Read the entire document set. Reference key evidence with page numbers in the format (p. X) or (pp. X–Y).
 2. Capture objective data in a "Key Clinical Findings" section. Include diagnoses, recent hospital course, vitals, weight trends, labs (INR, albumin, creatinine, bilirubin, etc.), symptoms, ascites/paracenteses, encephalopathy, infections, and any specialist notes. If data are missing, state "Not reported".
 3. Produce a "Hospice Eligibility Review" that maps the findings against disease-specific CMS criteria (liver, cardiac, pulmonary, renal, neuro, malignancy, HIV) and secondary domains (Palliative Performance Scale, ADLs, nutritional decline, co-morbid burden, psychosocial factors). Explicitly call out each criterion that is satisfied.
 4. Include a "Documentation Quality & Gaps" section noting missing key labs, consults, or imaging that would strengthen the record.
 5. Finish with a "Conclusion" that clearly states whether the patient meets hospice eligibility, how urgent the referral is, and recommended next steps for the care team.
-6. Bring in relevant context from the Compassionate Care Advisor knowledge base (clinical guidelines, regulatory expectations, best practices) to justify the assessment when appropriate.
+6. Bring in relevant context from the Hospice Audit Agent knowledge base (clinical guidelines, regulatory expectations, best practices) to justify the assessment when appropriate.
 7. If the files cannot be processed or lack sufficient data, say so plainly and request the specific items needed (e.g., updated labs, PPS score, imaging).
 
 Use the following response structure unless the user explicitly requests a different format:
@@ -400,7 +400,7 @@ Keep the tone clinical yet compassionate. Avoid hedging language unless the evid
       if (quotaHit) {
         return res.status(429).json({
           error: 'credit_limit_reached',
-          message: "You've reached your daily credit limit; please contact the Compassionate Care Advisor team to upgrade to a Premium account."
+          message: "You've reached your daily credit limit; please contact the Hospice Audit Agent team to upgrade to a Premium account."
         })
       }
 

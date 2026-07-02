@@ -59,7 +59,7 @@ const markdownComponents = {
 export default function ChatWidget({ embedded = false }) {
   const [open, setOpen] = useState(embedded) // Start open if embedded
   const [messages, setMessages] = useState([
-    { id: 1, from: 'bot', text: "👋 Hi! I'm the Compassionate Care Advisor.\n\nI use AI to help hospice providers identify patient eligibility, forecast future qualification, and ensure the right care at the right time.\n\nYou can also upload PDFs and images for analysis!\n\nHow can I help you today?" }
+  { id: 1, from: 'bot', text: "👋 Hi! I'm the Hospice Audit Agent.\n\nI use AI to help hospice providers identify patient eligibility, forecast future qualification, and ensure the right care at the right time.\n\nYou can also upload PDFs and images for analysis!\n\nHow can I help you today?" }
   ])
   const [input, setInput] = useState('')
   const [uploadedFiles, setUploadedFiles] = useState([])

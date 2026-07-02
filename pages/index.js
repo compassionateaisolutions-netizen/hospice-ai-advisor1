@@ -7,17 +7,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <Head>
-        <title>Compassionate Care Advisor</title>
-        <meta name="description" content="Compassionate Care Advisor — ethical AI to reduce hospice fraud and predict eligibility" />
+  <title>Hospice Audit Agent</title>
+  <meta name="description" content="Hospice Audit Agent — ethical AI to reduce hospice fraud and predict eligibility" />
       </Head>
 
       <header className="bg-white border-b sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
-              <Image src="/logo.svg" alt="Compassionate Care Advisor logo" width={40} height={40} className="object-contain" />
+              <Image src="/logo.svg" alt="Hospice Audit Agent logo" width={40} height={40} className="object-contain" />
             </div>
-            <h1 className="text-xl font-semibold">Compassionate Care Advisor</h1>
+            <h1 className="text-xl font-semibold">Hospice Audit Agent</h1>
           </div>
           <nav className="hidden md:flex items-center space-x-6 text-sm">
             <a href="#home" className="text-gray-700 hover:text-indigo-600 transition-colors">Home</a>
@@ -53,7 +53,7 @@ export default function Home() {
         <section className="py-20 bg-indigo-50 -mx-6 px-6">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Try the Compassionate Care Advisor</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Try the Hospice Audit Agent</h2>
               <p className="text-lg text-gray-600">Ask questions about hospice eligibility, fraud detection, compliance, or any aspect of our AI solution</p>
             </div>
             
@@ -62,10 +62,10 @@ export default function Home() {
               <div className="flex items-center justify-between px-6 py-4 bg-indigo-600 text-white rounded-t-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white/20 rounded overflow-hidden flex items-center justify-center">
-                    <Image src="/logo.svg" alt="Compassionate Care Advisor logo" width={40} height={40} className="object-contain" />
+                    <Image src="/logo.svg" alt="Hospice Audit Agent logo" width={40} height={40} className="object-contain" />
                   </div>
                   <div>
-                    <div className="font-semibold">Compassionate Care Advisor</div>
+                    <div className="font-semibold">Hospice Audit Agent</div>
                     <div className="text-sm opacity-90">Ask about fraud reduction & eligibility</div>
                   </div>
                 </div>
@@ -435,9 +435,9 @@ export default function Home() {
             <div className="mt-10">
               <div className="p-10 bg-white rounded-2xl shadow-xl border border-indigo-100">
                 <h3 className="text-2xl font-semibold text-indigo-700 mb-4 text-center">Patient Privacy Commitment</h3>
-                <p className="text-lg text-gray-700 mb-4 text-center">At Compassionate Care Advisor, protecting patient privacy is our highest priority. The system does not store, retain, or share any patient information. All data provided during an assessment is used solely for determining hospice eligibility based on established clinical criteria and decision trees.</p>
+                <p className="text-lg text-gray-700 mb-4 text-center">At Hospice Audit Agent, protecting patient privacy is our highest priority. The system does not store, retain, or share any patient information. All data provided during an assessment is used solely for determining hospice eligibility based on established clinical criteria and decision trees.</p>
                 <p className="text-lg text-gray-700 mb-4 text-center">To maintain confidentiality and comply with HIPAA standards, please ensure that any information entered is de-identified — meaning it should not include names, dates of birth, addresses, or any other personally identifiable information.</p>
-                <p className="text-lg text-gray-700 text-center">The Compassionate Care Advisor processes only the minimum information necessary to evaluate hospice criteria and immediately discards all data after the assessment is complete.</p>
+                <p className="text-lg text-gray-700 text-center">The Hospice Audit Agent processes only the minimum information necessary to evaluate hospice criteria and immediately discards all data after the assessment is complete.</p>
               </div>
             </div>
           </div>
@@ -1235,7 +1235,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="text-sm text-gray-600">
-              © {new Date().getFullYear()} Compassionate Care Advisor. All rights reserved.
+              © {new Date().getFullYear()} Hospice Audit Agent. All rights reserved.
             </div>
 
             <div className="flex items-center gap-6 text-sm">

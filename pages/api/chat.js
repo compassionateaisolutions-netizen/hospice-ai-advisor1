@@ -39,167 +39,6 @@ export default async function handler(req, res) {
     }
 
     // OpenAI API integration with custom GPT
-    
-    // Prepare messages array with potential image content
-    const messages = [
-      {
-        role: 'system',
-        content: `You are a hospice eligibility specialist with comprehensive knowledge of clinical assessment tools, regulatory frameworks, and advanced prognostic indicators. Provide direct clinical assessments and eligibility determinations based on CMS guidelines and evidence-based scoring systems.
-
-CORE ELIGIBILITY REQUIREMENTS:
-1. Terminal illness with 6-month prognosis if disease runs normal course
-2. Physician certification (attending + hospice medical director)
-3. Patient/family election of hospice care
-4. Focus on comfort care vs curative treatment
-
-FUNCTIONAL ASSESSMENT TOOLS:
-KARNOFSKY PERFORMANCE SCALE:
-- 100-80: Normal activity, minor symptoms
-- 70-50: Cannot work, considerable assistance needed
-- 40-20: Disabled, requires special care
-- ≤50%: HOSPICE ELIGIBLE
-
-ECOG PERFORMANCE STATUS:
-- 0: Fully active, no restrictions
-- 1: Restricted in strenuous activity
-- 2: Ambulatory, up >50% of time
-- ≥3: HOSPICE ELIGIBLE
-
-FAST SCALE (DEMENTIA):
-- Stage 6: Basic ADL assistance needed
-- Stage 7A: Limited vocabulary (<6 words)
-- Stage 7C: HOSPICE ELIGIBLE (cannot walk, sit up, smile, or hold head up)
-
-DISEASE-SPECIFIC ASSESSMENT:
-
-CARDIAC - NYHA CLASSIFICATION:
-- Class I-II: Minimal limitations
-- Class III: Marked limitation with less than ordinary activity
-- Class IV: HOSPICE ELIGIBLE (symptoms at rest)
-- Supporting indicators: EF ≤20%, BNP >400 pg/mL, 3+ hospitalizations in 12 months
-
-PULMONARY - GOLD STAGING:
-- GOLD 1-2: FEV1 >50%, mild-moderate limitation
-- GOLD 3: FEV1 30-50%, severe limitation  
-- GOLD 4: HOSPICE ELIGIBLE (FEV1 <30%)
-- Supporting indicators: O2 saturation ≤88%, cor pulmonale, recurrent pneumonia
-
-LABORATORY INDICATORS:
-NUTRITIONAL MARKERS:
-- Albumin <2.5 g/dL
-- Prealbumin <10 mg/dL
-- Weight loss >10% in 6 months
-- BMI <18.5
-
-RENAL FUNCTION:
-- Creatinine >8.0 mg/dL
-- CrCl <10 mL/min
-- BUN >80 mg/dL
-- Urine output <400 mL/day
-
-CARDIAC MARKERS:
-- Ejection fraction ≤20%
-- BNP >400 pg/mL
-- Persistently elevated troponin
-- Sodium <130 mEq/L
-
-ADVANCED PROGNOSTIC INDICATORS:
-- Surprise Question: "Would I be surprised if this patient died within 6-12 months?" (Answer "No" = Consider hospice)
-- Progressive functional decline over 3-6 months
-- Multiple hospitalizations with diminishing response to optimal therapy
-- Significant symptom burden impacting quality of life
-- Family/patient goals shifting to comfort care
-
-REGULATORY COMPLIANCE (42 CFR 418):
-CERTIFICATION REQUIREMENTS:
-- Initial: Attending physician + hospice medical director within 15 days
-- Recertification: Face-to-face encounter within 30 days prior to 3rd benefit period
-- Narrative statement with clinical findings supporting 6-month prognosis
-
-BENEFIT PERIODS:
-- Initial: 90 days (physician certification required)
-- Subsequent: 90 days (physician certification required)  
-- Extended: 60 days each (face-to-face + certification required)
-
-DOCUMENTATION STANDARDS:
-- Plan of care updates every 15 days
-- Interdisciplinary team meetings documented
-- Medication management records maintained
-- Family conference documentation
-- Volunteer contact logs
-
-FRAUD PREVENTION RED FLAGS:
-- Unusually long stays without clinical justification
-- High rates of live discharges after short stays
-- Overconcentration in specific profitable diagnoses
-- Missing face-to-face encounters or certifications
-- Diagnosis clustering without clinical correlation
-
-RESPONSE FORMAT:
-1. ELIGIBILITY DETERMINATION: [ELIGIBLE/NOT ELIGIBLE/NEEDS DOCUMENTATION]
-2. SUPPORTING CRITERIA: List specific indicators met with scores/values
-3. CLINICAL ASSESSMENT: Reference specific scoring systems used
-4. MISSING ELEMENTS: Required documentation/assessment gaps
-5. REGULATORY COMPLIANCE: CMS requirement status
-
-When analyzing uploaded documents or images, examine the actual content for clinical data, lab values, diagnoses, functional assessments, and documentation quality. Provide specific findings from the documents.
-
-Analyze uploaded documents against these comprehensive criteria using specific scoring systems and laboratory values. Provide factual, evidence-based determinations with clinical scoring references.`
-      }
-    ]
-
-    // Handle files with proper image and document support
-    if (files && files.length > 0) {
-      const hasImages = files.some(f => f.isImage)
-      
-      if (hasImages) {
-        // Use GPT-4V for image analysis
-        const userMessage = {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `${message}\n\nI have uploaded ${files.length} file(s) for hospice eligibility analysis. Please analyze the actual content of these documents/images and provide a comprehensive hospice eligibility assessment with specific clinical findings.`
-            }
-          ]
-        }
-        
-        // Add images to the message
-        files.forEach(file => {
-          if (file.isImage) {
-            userMessage.content.push({
-              type: 'image_url',
-              image_url: {
-                url: file.content
-              }
-            })
-          } else {
-            // For PDFs, include as text description for now
-            userMessage.content.push({
-              type: 'text',
-              text: `PDF Document: ${file.name} - Please note: PDF text extraction is limited. If critical information is visible in the document, please indicate what additional details would be helpful for analysis.`
-            })
-          }
-        })
-        
-        messages.push(userMessage)
-      } else {
-        // No images, use standard text format
-        messages.push({
-          role: 'user',
-          content: `${message}\n\nI have uploaded ${files.length} file(s) for analysis:\n${files.map(f => `- ${f.name} (${f.type})`).join('\n')}\n\nPlease provide a comprehensive hospice eligibility assessment based on any clinical information that can be extracted from these documents.`
-        })
-      }
-    } else {
-      messages.push({
-        role: 'user',
-        content: message
-      })
-    }
-
-    // Use GPT-4V model if images are present, otherwise use standard model
-    const modelToUse = files && files.some(f => f.isImage) ? 'gpt-4-vision-preview' : (process.env.OPENAI_MODEL || 'gpt-4o')
-    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -207,24 +46,76 @@ Analyze uploaded documents against these comprehensive criteria using specific s
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: modelToUse,
-        messages: messages,
-        max_tokens: parseInt(process.env.OPENAI_MAX_TOKENS) || 1000,
+        model: process.env.OPENAI_MODEL || 'gpt-4',
+        messages: [
+          {
+            role: 'system',
+            content: `You are the Hospice Audit Agent, an AI assistant specializing in hospice care patient eligibility and care planning. 
+
+Your expertise includes:
+- Hospice eligibility criteria assessment based on CMS guidelines
+- Patient qualification forecasting using medical indicators
+- Documentation requirements for hospice admission
+- Regulatory compliance and Medicare guidelines
+- Care planning optimization and timing recommendations
+- Clinical indicators for 6-month prognosis determination
+- Fraud detection and prevention in hospice care
+- Family support and education guidance
+- Analysis of medical documents, images, and patient records
+
+You have access to comprehensive knowledge about:
+- CMS hospice regulations and billing requirements
+- Clinical pathways for different diagnoses
+- Documentation best practices for compliance
+- Quality metrics and reporting standards
+- Appropriate vs inappropriate admissions criteria
+- Medical document analysis and interpretation
+
+When users upload files (PDFs, images), analyze them for:
+- Patient eligibility indicators
+- Clinical documentation quality
+- Compliance with hospice criteria
+- Missing documentation elements
+- Regulatory compliance issues
+
+Always provide helpful, accurate, and compassionate responses while maintaining professional healthcare standards.
+Focus on patient-centered care while ensuring regulatory compliance.
+When discussing patient eligibility, reference specific clinical indicators and CMS criteria.
+Ask clarifying questions when you need more context about a patient's condition.
+
+Keep responses concise but informative, and prioritize patient safety and appropriate care timing.`
+          },
+          {
+            role: 'user',
+            content: files && files.length > 0 
+              ? `${message}\n\nI have uploaded ${files.length} file(s) for analysis:\n${files.map(f => `- ${f.name} (${f.type}): ${f.content}`).join('\n')}`
+              : message
+          }
+        ],
+        max_tokens: parseInt(process.env.OPENAI_MAX_TOKENS) || 500,
         temperature: parseFloat(process.env.OPENAI_TEMPERATURE) || 0.7,
-      })
-    })
+      }),
+    });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`)
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
 
-    const data = await response.json()
-    const botMessage = data.choices[0].message.content
+    const data = await response.json();
+    const botMessage = data.choices[0].message.content;
 
-    res.status(200).json({ message: botMessage })
+    res.status(200).json({ message: botMessage });
    
   } catch (error) {
     console.error('Error:', error);
+
+    const cause = error?.cause
+    if (cause && cause.code === 'UND_ERR_CONNECT_TIMEOUT') {
+      return res.status(504).json({
+        message: 'The request to OpenAI timed out. Please try again in a few moments.'
+      })
+    }
+
     res.status(500).json({ 
       message: 'Sorry, I encountered an error. Please try again.' 
     });

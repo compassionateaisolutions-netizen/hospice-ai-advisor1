@@ -5,13 +5,13 @@ export default function TermsOfUse() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <Head>
-        <title>Terms of Use | Compassionate Care Advisor</title>
-        <meta name="description" content="Terms of Use for Compassionate Care Advisor" />
+  <title>Terms of Use | Hospice Audit Agent</title>
+  <meta name="description" content="Terms of Use for Hospice Audit Agent" />
       </Head>
 
       <header className="bg-white border-b sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="font-semibold">Compassionate Care Advisor</div>
+          <div className="font-semibold">Hospice Audit Agent</div>
           <Link href="/" className="text-sm text-gray-700 hover:text-indigo-600 transition-colors">
             Back to Home
           </Link>
@@ -137,7 +137,7 @@ export default function TermsOfUse() {
 
       <footer className="border-t bg-white">
         <div className="max-w-4xl mx-auto px-6 py-6 text-xs text-gray-500">
-          © {new Date().getFullYear()} Compassionate Care Advisor
+          © {new Date().getFullYear()} Hospice Audit Agent
         </div>
       </footer>
     </div>
