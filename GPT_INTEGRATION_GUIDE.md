@@ -1,4 +1,4 @@
-# GPT Integration Guide for Compassionate Care Advisor
+# GPT Integration Guide for Hospice Audit Agent
 
 This guide shows you how to integrate your custom GPT with the chatbot on your website.
 
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
         messages: [
           {
             role: 'system',
-            content: 'You are the Compassionate Care Advisor, an AI assistant specializing in hospice care, fraud detection, and eligibility prediction.'
+            content: 'You are the Hospice Audit Agent, an AI assistant specializing in hospice care, fraud detection, and eligibility prediction.'
           },
           {
             role: 'user',
@@ -152,7 +152,7 @@ const send = async () => {
   try {
     const completion = await openai.chat.completions.create({
       messages: [
-        { role: 'system', content: 'You are the Compassionate Care Advisor...' },
+  { role: 'system', content: 'You are the Hospice Audit Agent...' },
         { role: 'user', content: input }
       ],
       model: 'gpt-4',

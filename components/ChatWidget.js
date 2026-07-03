@@ -447,7 +447,7 @@ export default function ChatWidget({ embedded = false }) {
             <div className="flex items-center justify-between px-6 py-4 bg-indigo-600 text-white rounded-t-xl">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-white/20 rounded overflow-hidden flex items-center justify-center">
-                  <Image src="/logo.svg" alt="Compassionate Care logo" width={32} height={32} className="object-contain" />
+                  <Image src="/logo.svg" alt="Hospice Audit Agent logo" width={32} height={32} className="object-contain" />
                 </div>
                 <div>
                   <div className="font-semibold">Hospice AI Advisor</div>

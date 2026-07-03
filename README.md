@@ -57,7 +57,7 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment guide to Vercel wit
 
 ## 🤖 AI Capabilities
 
-The Compassionate Care Advisor specializes in:
+The Hospice Audit Agent specializes in:
 - Hospice eligibility criteria assessment
 - 6-month prognosis evaluation
 - Documentation requirements guidance

@@ -1,7 +1,7 @@
 # Hospice AI Advisor - Copilot Instructions
 
 ## Project Overview
-This is a Next.js 14 + Tailwind CSS marketing site with an integrated chat widget for the "Compassionate Care Advisor" - an AI tool focused on hospice fraud detection and eligibility prediction. The architecture features a single-page marketing site with a floating chat interface powered by OpenAI's API.
+This is a Next.js 14 + Tailwind CSS marketing site with an integrated chat widget for the "Hospice Audit Agent" - an AI tool focused on hospice fraud detection and eligibility prediction. The architecture features a single-page marketing site with a floating chat interface powered by OpenAI's API.
 
 ## Key Architecture Patterns
 
@@ -19,7 +19,7 @@ This is a Next.js 14 + Tailwind CSS marketing site with an integrated chat widge
 
 ### Content & Messaging Patterns
 - **Domain focus**: All content centers on hospice care, fraud detection, and eligibility prediction
-- **Professional tone**: Uses terms like "Compassionate Care Advisor", "ethical AI", and "clinical oversight"
+- **Professional tone**: Uses terms like "Hospice Audit Agent", "ethical AI", and "clinical oversight"
 - **Brand identity**: "CA" logo/initials used in header and chat widget consistently
 
 ## Development Workflows
